@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Graph } from "../types/graph.types";
 import type { AlgorithmKey } from "../types/algorithm.types";
 import { ALGORITHMS } from "../data/algorithms";
@@ -36,8 +37,24 @@ const fallbackGraph: Graph = {
 
 
 export default function AlgorithmPage() {
-  const location = useLocation();
-  const graph = (location.state?.graph as Graph | undefined) ?? fallbackGraph;
+  const navigate = useNavigate();
+
+  function getStoredGraph(): Graph | null {
+    const saved = localStorage.getItem("graphData");
+
+    if (!saved) return null;
+
+    try {
+      return JSON.parse(saved) as Graph;
+    } catch {
+      return null;
+    }
+  }
+
+  const graph = useMemo(() => {
+    return getStoredGraph() ?? fallbackGraph;
+  }, []);
+
   
   const [selectedAlgorithm, setSelectedAlgorithm] =
     useState<AlgorithmKey>("dijkstra");
@@ -193,10 +210,30 @@ export default function AlgorithmPage() {
           Graph<span>Lab</span>
         </div>
 
-        <div className="topbar-nav">
+        {/* <div className="topbar-nav">
           <span className="nav-tab done">1. Graphe prêt</span>
           <span className="nav-tab active">2. Algorithme & résultat</span>
+        </div> */}
+
+
+        <div className="topbar-nav">
+          <button
+            type="button"
+            className="nav-tab done"
+            onClick={() => navigate("/")}
+          >
+            1. Graphe prêt
+          </button>
+
+          <button
+            type="button"
+            className="nav-tab active"
+            disabled
+          >
+            2. Algorithme & résultat
+          </button>
         </div>
+
       </header>
 
       <div className="layout">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Graph } from "../types/graph.types";
 import type {
   ExecutionResponse,
@@ -43,29 +43,53 @@ export function AlgorithmVisualizationCard({
   const [localNodes, setLocalNodes] = useState(graph.nodes);
   const [dragState, setDragState] = useState<DragState>(null);
 
+  useEffect(() => {
+    setLocalNodes(graph.nodes);
+    }, [graph.nodes]);
+
   const nodesMap = useMemo(() => {
     return new Map(localNodes.map((node) => [node.id, node]));
   }, [localNodes]);
 
-  const getSvgPoint = (
-    event: React.PointerEvent<SVGSVGElement>
-  ) => {
-    const svg = event.currentTarget;
-    const rect = svg.getBoundingClientRect();
+  const viewBox = useMemo(() => {
+    if (localNodes.length === 0) return "0 0 540 300";
 
-    const viewBox = svg.viewBox.baseVal;
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
+    const padding = 80;
+
+    const minX = Math.min(...localNodes.map((node) => node.x ?? 0)) - padding;
+    const maxX = Math.max(...localNodes.map((node) => node.x ?? 0)) + padding;
+    const minY = Math.min(...localNodes.map((node) => node.y ?? 0)) - padding;
+    const maxY = Math.max(...localNodes.map((node) => node.y ?? 0)) + padding;
+
+    return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+  }, [localNodes]);
+
+  const getSvgPoint = (event: React.PointerEvent<SVGSVGElement>) => {
+    const svg = event.currentTarget;
+    //const rect = svg.getBoundingClientRect();
+
+    const svgPoint = svg.createSVGPoint();
+    svgPoint.x = event.clientX;
+    svgPoint.y = event.clientY;
+
+    const ctm = svg.getScreenCTM();
+
+    if (!ctm) {
+      return {
+        x: 0,
+        y: 0,
+      };
+    }
+
+    const point = svgPoint.matrixTransform(ctm.inverse());
 
     return {
-      x: (event.clientX - rect.left) * scaleX,
-      y: (event.clientY - rect.top) * scaleY,
+      x: point.x,
+      y: point.y,
     };
   };
 
-  const handlePointerMove = (
-    event: React.PointerEvent<SVGSVGElement>
-  ) => {
+  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
     if (!dragState) return;
 
     const point = getSvgPoint(event);
@@ -98,24 +122,25 @@ export function AlgorithmVisualizationCard({
       <div className="visual-zone visual-zone-enhanced">
         <svg
           className="graph-svg"
-          viewBox="0 0 540 300"
+          viewBox={viewBox}
+          preserveAspectRatio="xMidYMid meet"
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerLeave}
         >
           <defs>
             <radialGradient id="nodeGradientDefault" cx="38%" cy="34%" r="68%">
-              <stop offset="0%" stopColor="#e7e9ff"/>
-              <stop offset="30%" stopColor="#c8d0ff"/>
-              <stop offset="68%" stopColor="#7b7cf5"/>
-              <stop offset="100%" stopColor="#4f46e5"/>
+              <stop offset="0%" stopColor="#e7e9ff" />
+              <stop offset="30%" stopColor="#c8d0ff" />
+              <stop offset="68%" stopColor="#7b7cf5" />
+              <stop offset="100%" stopColor="#4f46e5" />
             </radialGradient>
 
             <radialGradient id="nodeGradientSource" cx="38%" cy="34%" r="68%">
-              <stop offset="0%" stopColor="#dfe4ff"/>
-              <stop offset="28%" stopColor="#b9c2ff"/>
-              <stop offset="65%" stopColor="#6f73f4"/>
-              <stop offset="100%" stopColor="#3730a3"/>
+              <stop offset="0%" stopColor="#dfe4ff" />
+              <stop offset="28%" stopColor="#b9c2ff" />
+              <stop offset="65%" stopColor="#6f73f4" />
+              <stop offset="100%" stopColor="#3730a3" />
             </radialGradient>
 
             <radialGradient id="nodeGradientTarget" cx="38%" cy="34%" r="68%">
@@ -125,7 +150,12 @@ export function AlgorithmVisualizationCard({
               <stop offset="100%" stopColor="#15803d" />
             </radialGradient>
 
-            <radialGradient id="nodeGradientHighlighted" cx="38%" cy="34%" r="68%">
+            <radialGradient
+              id="nodeGradientHighlighted"
+              cx="38%"
+              cy="34%"
+              r="68%"
+            >
               <stop offset="0%" stopColor="#dfe4ff" />
               <stop offset="28%" stopColor="#bba7ff" />
               <stop offset="65%" stopColor="#9b7ef4" />
@@ -245,19 +275,19 @@ export function AlgorithmVisualizationCard({
                   const svg = event.currentTarget.ownerSVGElement;
                   if (!svg) return;
 
-                  const rect = svg.getBoundingClientRect();
-                  const viewBox = svg.viewBox.baseVal;
+                  const svgPoint = svg.createSVGPoint();
+                  svgPoint.x = event.clientX;
+                  svgPoint.y = event.clientY;
 
-                  const scaleX = viewBox.width / rect.width;
-                  const scaleY = viewBox.height / rect.height;
+                  const ctm = svg.getScreenCTM();
+                  if (!ctm) return;
 
-                  const pointerX = (event.clientX - rect.left) * scaleX;
-                  const pointerY = (event.clientY - rect.top) * scaleY;
+                  const point = svgPoint.matrixTransform(ctm.inverse());
 
                   setDragState({
                     nodeId: node.id,
-                    offsetX: pointerX - x,
-                    offsetY: pointerY - y,
+                    offsetX: point.x - x,
+                    offsetY: point.y - y,
                   });
 
                   event.currentTarget.setPointerCapture(event.pointerId);
