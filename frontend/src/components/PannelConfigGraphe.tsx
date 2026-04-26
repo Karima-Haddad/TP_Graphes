@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import type { Graph } from '../types/graph.types';
-import '../styles/PannelConfigGraphe.css';
 
 interface PropsPannelConfigGraphe {
   graph: Graph | null;
@@ -42,7 +41,8 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
   };
 
   return (
-    <div className="panel-config">
+    <>
+      {/* STATISTIQUES RAPIDES */}
       <div className="card">
         <div className="card-title">Statistiques rapides</div>
         <div className="stats">
@@ -57,6 +57,7 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
         </div>
       </div>
 
+      {/* PROPRIÉTÉS STRUCTURELLES */}
       <div className="card">
         <div className="card-title">Propriétés structurelles</div>
         <div className="side-list">
@@ -78,11 +79,12 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
           <div className={`si ${statistiques.cycles > 0 ? 'warn' : 'pass'}`}>
             <span className="si-icon"></span>
             Cycle détecté
-            <span className="si-val">{statistiques.cycles}</span>
+            <span className="si-val">{statistiques.cycles > 0 ? 'Oui' : 'Non'}</span>
           </div>
         </div>
       </div>
 
+      {/* ANALYSES COMPLÉMENTAIRES */}
       <div className="card">
         <div className="card-title">Analyses complémentaires</div>
         <div className="side-list">
@@ -108,6 +110,6 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
