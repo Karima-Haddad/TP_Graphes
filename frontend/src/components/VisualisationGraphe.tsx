@@ -4,9 +4,10 @@ import '../styles/VisualisationGraphe.css';
 
 interface PropsVisualisationGraphe {
   graph: Graph | null;
+  onGraphChange?: (graph: Graph) => void;
 }
 
-export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph }) => {
+export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph, onGraphChange }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph 
   };
 
   const dessinerGraphe = () => {
+    
     if (!graph || !svgRef.current) return;
 
     const svg = svgRef.current;
@@ -73,6 +75,31 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph 
 
     const positions = calculerPositions(graph.nodes);
     const nodeRadius = 28;
+
+    const updatedNodes = graph.nodes.map((node) => {
+  const pos = positions.get(node.id);
+
+  return {
+    ...node,
+    x: pos?.x ?? node.x,
+    y: pos?.y ?? node.y,
+  };
+});
+
+const positionsDifferent =
+  graph.nodes.some((node, index) => {
+    return (
+      node.x !== updatedNodes[index].x ||
+      node.y !== updatedNodes[index].y
+    );
+  });
+
+if (positionsDifferent) {
+  onGraphChange?.({
+    ...graph,
+    nodes: updatedNodes,
+  });
+}
 
     // Groupe pour les arêtes
     const edgesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');

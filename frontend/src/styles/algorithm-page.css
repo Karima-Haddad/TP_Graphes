@@ -1137,3 +1137,37 @@ button:disabled:focus {
 
 .page-title { animation: fade-up .5s var(--ease-out) both; }
 .page-desc  { animation: fade-up .5s .08s var(--ease-out) both; }
+
+
+
+html,
+body,
+#root {
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.algorithm-page {
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+}
+
+.layout {
+  min-height: calc(100vh - 64px);
+  height: auto;
+  overflow: visible;
+}
+
+.main {
+  height: auto;
+  overflow: visible;
+  padding-bottom: 80px;
+}
+
+.nav-tab:disabled {
+  cursor: default;
+  opacity: 1;
+}
