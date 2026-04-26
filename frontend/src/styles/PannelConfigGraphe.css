@@ -1,0 +1,135 @@
+.panel-config {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-config .card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2ddd6;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+}
+
+.panel-config .card-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a8a29e;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-config .card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2ddd6;
+}
+
+.panel-config .stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.panel-config .stat {
+  background: #f9f8f6;
+  border: 1px solid #e2ddd6;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.panel-config .stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a8a29e;
+}
+
+.panel-config .stat-value {
+  font-size: 21px;
+  font-weight: 700;
+  color: #1c1917;
+  margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+}
+
+.panel-config .side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel-config .si {
+  background: #f9f8f6;
+  border: 1px solid #e2ddd6;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #57534e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-config .si-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a8a29e;
+  flex-shrink: 0;
+}
+
+.panel-config .si-val {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.panel-config .si.pass {
+  color: #15803d;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.panel-config .si.pass .si-icon {
+  background: #15803d;
+}
+
+.panel-config .si.warn {
+  color: #b45309;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.panel-config .si.warn .si-icon {
+  background: #b45309;
+}
+
+.panel-config .si.info {
+  color: #4f46e5;
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+
+.panel-config .si.info .si-icon {
+  background: #4f46e5;
+}
+
+.panel-config .si.neutral {
+  color: #475569;
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.panel-config .si.neutral .si-icon {
+  background: #475569;
+}
