@@ -4,6 +4,7 @@ import '../styles/VisualisationGraphe.css';
 
 interface PropsVisualisationGraphe {
   graph: Graph | null;
+  onGraphChange?: (graph: Graph) => void;
 }
 
 interface NodePosition {
@@ -15,6 +16,7 @@ interface NodePosition {
 }
 
 export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph }) => {
+export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph, onGraphChange }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const positionsRef = useRef<Map<string, NodePosition>>(new Map());
   const [positions, setPositions] = useState<Map<string, NodePosition>>(new Map());
@@ -261,6 +263,32 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph 
 
     const nodeRadius = 28;
 
+    const updatedNodes = graph.nodes.map((node) => {
+  const pos = positions.get(node.id);
+
+  return {
+    ...node,
+    x: pos?.x ?? node.x,
+    y: pos?.y ?? node.y,
+  };
+});
+
+const positionsDifferent =
+  graph.nodes.some((node, index) => {
+    return (
+      node.x !== updatedNodes[index].x ||
+      node.y !== updatedNodes[index].y
+    );
+  });
+
+if (positionsDifferent) {
+  onGraphChange?.({
+    ...graph,
+    nodes: updatedNodes,
+  });
+}
+
+    // Groupe pour les arêtes
     const edgesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     edgesGroup.setAttribute('id', 'edges');
 
