@@ -1,3 +1,7 @@
+try:
+    from backend.main import app
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from main import app
 from fastapi import FastAPI
 from routes.ford_fulkerson_route import router
 from backend.routes.mst_routes import router as mst_router
