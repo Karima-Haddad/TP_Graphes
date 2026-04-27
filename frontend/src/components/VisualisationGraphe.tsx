@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { Graph, GraphNode } from '../types/graph.types';
+import type { Graph } from '../types/graph.types';
 import '../styles/VisualisationGraphe.css';
 
 interface PropsVisualisationGraphe {
@@ -15,7 +15,7 @@ interface NodePosition {
   fixed: boolean;
 }
 
-export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph }) => {
+
 export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph, onGraphChange }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const positionsRef = useRef<Map<string, NodePosition>>(new Map());
