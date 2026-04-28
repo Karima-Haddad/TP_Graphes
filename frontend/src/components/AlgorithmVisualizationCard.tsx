@@ -42,7 +42,6 @@ export function AlgorithmVisualizationCard({
 
 
   const nodeColors = visualState?.node_colors ?? {};
-  const edgeColors = visualState?.edge_colors ?? {};
   const nodeLabels = visualState?.node_labels ?? {};
   const edgeLabels = visualState?.edge_labels ?? {};
 
