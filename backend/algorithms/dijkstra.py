@@ -19,12 +19,27 @@ Complexité : O((V + E) log V) avec un tas min.
 
 import heapq
 import time
-from models.models import Graph
-from utils.utils import (
-    reconstruct_path, get_path_edges,
-    build_success_response, build_error_response,
-    make_step, format_distances_as_labels
-)
+
+try:
+    from backend.models.models import Graph
+    from backend.utils.utils import (
+        reconstruct_path,
+        get_path_edges,
+        build_success_response,
+        build_error_response,
+        make_step,
+        format_distances_as_labels,
+    )
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from models.models import Graph
+    from utils.utils import (
+        reconstruct_path,
+        get_path_edges,
+        build_success_response,
+        build_error_response,
+        make_step,
+        format_distances_as_labels,
+    )
 
 INF = float('inf')
 ALGORITHM = "dijkstra"

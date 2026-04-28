@@ -8,6 +8,7 @@ type Props = {
   targetNode: string;
   displayMode: string;
   executionMode: string;
+  executionFinished: boolean;
   onSourceChange: (value: string) => void;
   onTargetChange: (value: string) => void;
   onDisplayModeChange: (value: string) => void;
@@ -35,6 +36,7 @@ export function AlgorithmParamsCard({
   isPlaying,
   stepControlsEnabled,
   isCompatible,
+  executionFinished,
   onSourceChange,
   onTargetChange,
   onDisplayModeChange,
@@ -42,10 +44,12 @@ export function AlgorithmParamsCard({
   onExecute,
   onNextStep,
   onPrevStep,
-  onPlay,
   onPause,
   onResetSteps,
 }: Props) {
+  const isStepMode = executionMode === "Pas à pas";
+  const isFordFulkerson = algorithm.key === "ford-fulkerson";
+
   return (
     <div className="card">
       <div className="card-title">Paramètres d’exécution</div>
@@ -70,7 +74,7 @@ export function AlgorithmParamsCard({
 
         {algorithm.requiresTarget && (
           <div className="field">
-            <label>Sommet destination</label>
+            <label>{isFordFulkerson ? "Puits" : "Sommet destination"}</label>
             <select
               value={targetNode}
               onChange={(e) => onTargetChange(e.target.value)}
@@ -87,18 +91,7 @@ export function AlgorithmParamsCard({
       </div>
 
       <div className="form-row">
-        <div className="field">
-          <label>Mode d’affichage</label>
-          <select
-            value={displayMode}
-            onChange={(e) => onDisplayModeChange(e.target.value)}
-            disabled={isLoading}
-          >
-            <option>Chemin complet + coût</option>
-            <option>Distances seulement</option>
-            <option>Tables détaillées</option>
-          </select>
-        </div>
+        
 
         <div className="field">
           <label>Exécution</label>
@@ -118,16 +111,16 @@ export function AlgorithmParamsCard({
           type="button"
           className="btn btn-success"
           onClick={onExecute}
-          disabled={isLoading || !isCompatible}
+          disabled={isLoading || !isCompatible || executionFinished}
         >
-          {isLoading ? "Exécution..." : "▶ Exécuter"}
+          {isStepMode ? "▶ Lire les étapes" : "⚡ Lancer l’algorithme"}
         </button>
 
         <button
           type="button"
           className="btn btn-ghost"
           onClick={onPrevStep}
-          disabled={!stepControlsEnabled}
+          disabled={!stepControlsEnabled || executionFinished}
         >
           ← Étape précédente
         </button>
@@ -136,48 +129,39 @@ export function AlgorithmParamsCard({
           type="button"
           className="btn btn-ghost"
           onClick={onNextStep}
-          disabled={!stepControlsEnabled}
+          disabled={!stepControlsEnabled || executionFinished}
         >
           → Étape suivante
         </button>
 
-        {!isPlaying ? (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onPlay}
-            disabled={!stepControlsEnabled}
-          >
-            ▶ Lecture
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onPause}
-          >
-            ⏸ Pause
-          </button>
-        )}
-
         <button
           type="button"
           className="btn btn-ghost"
+          onClick={onPause}
+          disabled={!isPlaying || executionFinished}
+        >
+          ⏸ Pause
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-ghost btn-reset"
           onClick={onResetSteps}
-          disabled={!stepControlsEnabled}
+          disabled={isLoading}
         >
           ↺ Réinitialiser
         </button>
       </div>
 
       {executionMode === "Directe" && (
-        <div className="note">
-          Le mode direct affiche immédiatement le résultat final sans navigation étape par étape.
+        <div className="note note-direct">
+          Le mode direct affiche immédiatement le résultat final sans navigation
+          étape par étape.
         </div>
       )}
 
       {!isCompatible && (
-        <div className="note" style={{ marginTop: "12px" }}>
+        <div className="note note-error" style={{ marginTop: "12px" }}>
           Cet algorithme ne peut pas être exécuté sur le graphe courant.
         </div>
       )}

@@ -26,14 +26,20 @@ export function AlgorithmVisualizationCard({
   sourceNode,
   targetNode,
 }: Props) {
-  const visualState = currentStep
-    ? currentStep.state
-    : executionResult?.success
-    ? executionResult.visualization.result_graph
-    : null;
+  const isLastStep =
+    executionResult?.success &&
+    currentStep &&
+    currentStep.index === executionResult.visualization.steps.length - 1;
 
-  const highlightedNodes = new Set(visualState?.highlighted_nodes ?? []);
-  const highlightedEdges = new Set(visualState?.highlighted_edges ?? []);
+  const visualState =
+    executionResult?.success && isLastStep
+      ? executionResult.visualization.result_graph
+      : currentStep
+      ? currentStep.state
+      : executionResult?.success
+      ? executionResult.visualization.result_graph
+      : null;
+
 
   const nodeColors = visualState?.node_colors ?? {};
   const edgeColors = visualState?.edge_colors ?? {};
@@ -115,6 +121,16 @@ export function AlgorithmVisualizationCard({
     setDragState(null);
   };
 
+  
+  const highlightedNodes = new Set(visualState?.highlighted_nodes ?? []);
+  const highlightedEdges = new Set(visualState?.highlighted_edges ?? []);
+
+  // const highlightedNodes = currentStep?.state.highlighted_nodes ?? [];
+  // const highlightedEdges = currentStep?.state.highlighted_edges ?? [];
+
+  const selectedNodes = currentStep?.state.selected_nodes ?? [];
+  const selectedEdges = currentStep?.state.selected_edges ?? [];
+
   return (
     <div className="card">
       <div className="card-title">Visualisation du résultat</div>
@@ -161,9 +177,33 @@ export function AlgorithmVisualizationCard({
               <stop offset="65%" stopColor="#9b7ef4" />
               <stop offset="100%" stopColor="#4f46e5" />
             </radialGradient>
+
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="10"
+              refX="8"
+              refY="3"
+              orient="auto"
+              markerUnits="strokeWidth"
+            >
+              <path d="M0,0 L0,6 L9,3 z" fill="#8f8a83" />
+            </marker>
           </defs>
 
           {graph.edges.map((edge) => {
+
+            const isHighlightedEdge = highlightedEdges.has(edge.id);
+            const isSelectedEdge = selectedEdges.includes(edge.id);
+
+            const edgeColor = isHighlightedEdge
+              ? "#f97316"
+              : isSelectedEdge
+              ? "#4f46e5"
+              : "#d6d3d1";
+
+            const edgeWidth = isHighlightedEdge || isSelectedEdge ? 4 : 2;
+
             const source = nodesMap.get(edge.source);
             const target = nodesMap.get(edge.target);
 
@@ -174,8 +214,35 @@ export function AlgorithmVisualizationCard({
             const x2 = target.x ?? 0;
             const y2 = target.y ?? 0;
 
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
+            const opposite = graph.edges.some(
+                (e) => e.source === edge.target && e.target === edge.source
+              );
+
+              const dx = x2 - x1;
+              const dy = y2 - y1;
+              const length = Math.sqrt(dx * dx + dy * dy) || 1;
+
+              const nodeRadius = 26;
+
+              const startX = x1 + (dx / length) * nodeRadius;
+              const startY = y1 + (dy / length) * nodeRadius;
+              const endX = x2 - (dx / length) * nodeRadius;
+              const endY = y2 - (dy / length) * nodeRadius;
+
+              const curve = opposite ? 35 : 0;
+              const normalX = -dy / length;
+              const normalY = dx / length;
+
+              const controlX = (startX + endX) / 2 + normalX * curve;
+              const controlY = (startY + endY) / 2 + normalY * curve;
+
+              const labelX = opposite
+                ? 0.25 * startX + 0.5 * controlX + 0.25 * endX
+                : (startX + endX) / 2;
+
+              const labelY = opposite
+                ? 0.25 * startY + 0.5 * controlY + 0.25 * endY
+                : (startY + endY) / 2;
 
             const isHighlighted = highlightedEdges.has(edge.id);
 
@@ -189,22 +256,53 @@ export function AlgorithmVisualizationCard({
 
             return (
               <g key={edge.id}>
-                <line
-                  className={
-                    isHighlighted
-                      ? "graph-edge path-highlight"
-                      : "graph-edge"
-                  }
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke={stroke}
-                  strokeLinecap="round"
-                />
+                {(() => {
+                    const opposite = graph.edges.some(
+                      (e) => e.source === edge.target && e.target === edge.source
+                    );
+
+                    const dx = x2 - x1;
+                    const dy = y2 - y1;
+                    const length = Math.sqrt(dx * dx + dy * dy) || 1;
+
+                    const nodeRadius = 26;
+
+                    const startX = x1 + (dx / length) * nodeRadius;
+                    const startY = y1 + (dy / length) * nodeRadius;
+                    const endX = x2 - (dx / length) * nodeRadius;
+                    const endY = y2 - (dy / length) * nodeRadius;
+
+                    const curve = opposite ? 35 : 0;
+                    const normalX = -dy / length;
+                    const normalY = dx / length;
+
+                    const controlX = (startX + endX) / 2 + normalX * curve;
+                    const controlY = (startY + endY) / 2 + normalY * curve;
+
+                    const pathD = opposite
+                      ? `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`
+                      : `M ${startX} ${startY} L ${endX} ${endY}`;
+
+                    return (
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={edgeColor}
+                        strokeWidth={edgeWidth}
+                        className={
+                          isHighlightedEdge
+                            ? "graph-edge path-highlight edge-pulse"
+                            : isHighlighted
+                            ? "graph-edge path-highlight"
+                            : "graph-edge"
+                        }
+                        markerEnd={graph.directed ? "url(#arrowhead)" : undefined}
+                      />
+                    );
+                  })()}
 
                 {displayedLabel && (
-                  <g transform={`translate(${midX},${midY - 10})`}>
+                  <g transform={`translate(${labelX},${labelY - 10})`}>
                     <rect
                       className="graph-edge-badge"
                       x="-16"
@@ -229,6 +327,24 @@ export function AlgorithmVisualizationCard({
           })}
 
           {localNodes.map((node) => {
+
+            const isHighlightedNode = highlightedNodes.has(node.id);
+            const isSelectedNode = selectedNodes.includes(node.id);
+
+            const nodeFill = isHighlightedNode
+              ? "#fff7ed"
+              : isSelectedNode
+              ? "#eef2ff"
+              : "#ffffff";
+
+            const nodeStroke = isHighlightedNode
+              ? "#f97316"
+              : isSelectedNode
+              ? "#4f46e5"
+              : "#d6d3d1";
+
+            const nodeStrokeWidth = isHighlightedNode || isSelectedNode ? 3 : 1.5;
+
             const x = node.x ?? 0;
             const y = node.y ?? 0;
 
@@ -252,16 +368,51 @@ export function AlgorithmVisualizationCard({
               ringColor = "rgba(21,128,61,.30)";
             }
 
-            if (isHighlighted) {
+            if (isSelectedNode) {
               gradient = "url(#nodeGradientHighlighted)";
               textColor = "#ffffff";
             }
 
-            if (nodeColors[node.id]) {
-              gradient = "url(#nodeGradientHighlighted)";
+            if (isHighlightedNode) {
+              gradient = "url(#nodeGradientTarget)";
+              textColor = "#ffffff";
+            }
+
+            const algorithmColor = getColorFromValue(nodeColors[node.id]);
+
+            if (algorithmColor) {
+              gradient = algorithmColor;
+              textColor = "#ffffff";
+              ringColor = algorithmColor;
             }
 
             const displayedLabel = nodeLabels[node.id] ?? node.label;
+
+            const colorPalette = [
+              "#4f46e5",
+              "#16a34a",
+              "#f97316",
+              "#dc2626",
+              "#0891b2",
+              "#9333ea",
+              "#ca8a04",
+              "#0f766e",
+            ];
+
+            function getColorFromValue(value: unknown) {
+              if (!value) return null;
+
+              const str = String(value);
+
+              if (str.startsWith("#") || str.startsWith("rgb")) {
+                return str;
+              }
+
+              const match = str.match(/\d+/);
+              const index = match ? Number(match[0]) - 1 : 0;
+
+              return colorPalette[Math.abs(index) % colorPalette.length];
+            }
 
             return (
               <g
@@ -302,11 +453,17 @@ export function AlgorithmVisualizationCard({
                 />
 
                 <circle
-                  className="graph-node-ring"
+                  className={
+                    isHighlightedNode
+                      ? "graph-node-main node-current"
+                      : isSelectedNode
+                      ? "graph-node-main node-selected"
+                      : "graph-node-main"
+                  }
                   cx={x}
                   cy={y}
-                  r="27"
-                  style={{ stroke: ringColor }}
+                  r="22"
+                  fill={gradient}
                 />
 
                 <g className="graph-node-core">
@@ -343,15 +500,13 @@ export function AlgorithmVisualizationCard({
 
       <div className="graph-legend">
         <span className="legend-chip legend-source">● Source</span>
-        <span className="legend-chip legend-target">● Destination</span>
+        <span className="legend-chip legend-target">
+          ● {executionResult?.algorithm === "ford-fulkerson"
+            ? "Puits"
+            : "Destination"}
+        </span>
         <span className="legend-chip legend-default">● Sommet normal</span>
         <span className="legend-chip legend-highlight">● Résultat</span>
-      </div>
-
-      <div className="graph-note">
-        {executionResult?.success
-          ? "La visualisation reflète l’état final renvoyé par le backend."
-          : "Le graphe conserve les positions définies dans la structure initiale."}
       </div>
     </div>
   );

@@ -1,33 +1,53 @@
-from flask import Blueprint, request, jsonify
-from algorithms.connected_components import connected_components
-from algorithms.strongly_connected_components import strongly_connected_components
+from typing import Any
 
-graph_bp = Blueprint("graph", __name__)
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-@graph_bp.route("/cc", methods=["POST"])
-def cc_route():
-    data = request.json
+try:
+    from backend.algorithms.connected_components import connected_components
+    from backend.algorithms.strongly_connected_components import strongly_connected_components
+    from backend.services.graph_analyzer import GraphAnalyzer
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from algorithms.connected_components import connected_components
+    from algorithms.strongly_connected_components import strongly_connected_components
+    from services.graph_analyzer import GraphAnalyzer
 
-    result, steps = connected_components(data["graph"])
 
-    return jsonify({
+router = APIRouter(prefix="/api/graph", tags=["Graph"])
+
+
+class GraphAlgorithmRequest(BaseModel):
+    graph: dict[str, Any]
+
+
+@router.post("/cc")
+def cc_route(body: GraphAlgorithmRequest) -> dict[str, Any]:
+    result, steps = connected_components(body.graph)
+    return {
         "success": True,
         "algorithm": "cc",
         "result": result,
         "visualization": {
-            "steps": steps
-        }
-    })
+            "steps": steps,
+        },
+    }
 
 
-@graph_bp.route("/scc", methods=["POST"])
-def scc_route():
-    data = request.json
-
-    result = strongly_connected_components(data["graph"])
-
-    return jsonify({
+@router.post("/scc")
+def scc_route(body: GraphAlgorithmRequest) -> dict[str, Any]:
+    result = strongly_connected_components(body.graph)
+    return {
         "success": True,
         "algorithm": "scc",
-        "result": result
-    })
+        "result": result,
+    }
+
+
+@router.post("/properties")
+def graph_properties_route(body: GraphAlgorithmRequest) -> dict[str, Any]:
+    analyzer = GraphAnalyzer(body.graph)
+    return {
+        "success": True,
+        "algorithm": "graph-properties",
+        "result": analyzer.analyze(),
+    }

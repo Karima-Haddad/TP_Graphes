@@ -7,7 +7,8 @@ export type AlgorithmKey =
   | "connected-components"
   | "strongly-connected-components"
   | "euler"
-  | "welsh-powell";
+  | "welsh-powell"
+  | "ford-fulkerson";
 
 export type AlgorithmOption = {
   key: AlgorithmKey;

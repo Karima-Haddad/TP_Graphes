@@ -83,7 +83,10 @@ def run(graph, params):
 
     Utilisé par la route Flask.
     """
-    from algorithms.ford_fulkerson import execute, build_error_response
+    try:
+        from backend.algorithms.ford_fulkerson import execute, build_error_response
+    except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+        from algorithms.ford_fulkerson import execute, build_error_response
 
     # Étape 1 : normalisation
     graph = normalize_graph(graph)

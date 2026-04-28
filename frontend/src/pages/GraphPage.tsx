@@ -29,16 +29,15 @@ function GraphPage() {
       return;
     }
 
-    console.log("GRAPHE AVANT SAUVEGARDE :", graph.nodes);
+    console.log("GRAPH COMPLET :", graph);
+    console.log("ORIENTÉ ?", graph.directed);
+    console.log("PONDÉRÉ ?", graph.weighted);
+    console.log("ARÊTES :", graph.edges);
 
-    // sauvegarde persistante
-    localStorage.setItem(
-      "graphData",
-      JSON.stringify(graph)
-    );
+    localStorage.setItem("graphData", JSON.stringify(graph));
 
     navigate("/algorithm", {
-      state: { graph }
+      state: { graph },
     });
   };
 
@@ -75,7 +74,7 @@ function GraphPage() {
           className="nav-tab active"
           onClick={goToAlgorithmPage}
         >
-          2. Algorithme & résultat
+          2. Algorithmes & résultats
         </button>
 
       </div>

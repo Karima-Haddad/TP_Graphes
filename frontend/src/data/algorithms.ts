@@ -77,4 +77,15 @@ export const ALGORITHMS: AlgorithmOption[] = [
     description:
       "Coloration des sommets avec une heuristique gloutonne.",
   },
+  {
+  key: "ford-fulkerson",
+  label: "Ford-Fulkerson",
+  category: "Autres",
+  requiresSource: true,
+  requiresTarget: true,
+  requiresWeighted: true,
+  requiresDirected: true,
+  description:
+    "Calcule le flot maximum entre une source et un puits.",
+ },
 ];

@@ -5,8 +5,12 @@ Reçoit la requête validée depuis la route, appelle le bon algorithme
 et retourne la réponse JSON du contrat.
 """
 
-from algorithms import dijkstra, bellman_ford, bellman
-from utils.utils import build_error_response
+try:
+    from backend.algorithms import bellman, bellman_ford, dijkstra
+    from backend.utils.utils import build_error_response
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from algorithms import bellman, bellman_ford, dijkstra
+    from utils.utils import build_error_response
 
 # Registre des algorithmes disponibles
 SHORTEST_PATH_ALGORITHMS = {
