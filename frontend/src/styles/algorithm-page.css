@@ -827,27 +827,6 @@ button:disabled:focus {
   opacity: .7;
 }
 
-/* ── SVG defs required in your SVG markup ──
-   Add inside <defs> of every graph SVG:
-
-  <radialGradient id="nodeGradient" cx="35%" cy="30%" r="65%">
-    <stop offset="0%"   stop-color="#7c73f5"/>
-    <stop offset="45%"  stop-color="#4f46e5"/>
-    <stop offset="100%" stop-color="#2d2580"/>
-  </radialGradient>
-
-  <radialGradient id="nodeGradientTeal" cx="35%" cy="30%" r="65%">
-    <stop offset="0%"   stop-color="#2dd4bf"/>
-    <stop offset="45%"  stop-color="#0d9488"/>
-    <stop offset="100%" stop-color="#065f55"/>
-  </radialGradient>
-
-  <radialGradient id="nodeGradientGreen" cx="35%" cy="30%" r="65%">
-    <stop offset="0%"   stop-color="#4ade80"/>
-    <stop offset="45%"  stop-color="#15803d"/>
-    <stop offset="100%" stop-color="#0d4d24"/>
-  </radialGradient>
-──────────────────────────────────────── */
 
 /* ── NODE LABEL ── */
 .graph-label {
@@ -1085,16 +1064,15 @@ button:disabled:focus {
   cursor: grabbing;
 }
 
+
+
 .graph-node-group.is-dragging .graph-node-shadow{
-  opacity:.62;
-  filter: blur(4px);
+  display:none;
 }
 
-.graph-node-group.is-dragging .graph-node-core {
-  transform: translateY(-8px) scale(1.1);
-  filter:
-    drop-shadow(0 14px 22px rgba(55,48,163,.34))
-    drop-shadow(0 5px 8px rgba(28,25,23,.18));
+.graph-node-group.is-dragging .graph-node-core{
+  transform:none;
+  filter:none;
 }
 
 .graph-node-group.is-dragging .graph-node-ring {
@@ -1844,6 +1822,7 @@ grid-template-columns:1fr;
 }
 
 .edge-pulse {
+
   animation: edgePulseStrong 0.7s ease-in-out infinite alternate;
 }
 
