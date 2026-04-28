@@ -5,7 +5,11 @@ Gère la reconstruction de chemin et la construction des réponses JSON du contr
 
 import time
 from typing import Optional
-from models.models import Graph
+
+try:
+    from backend.models.models import Graph
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from models.models import Graph
 
 
 # ─────────────────────────────────────────────

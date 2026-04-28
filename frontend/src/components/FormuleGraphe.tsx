@@ -412,7 +412,8 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
               className="aretes-textarea"
             />
             <div className="section-hint">
-              Format: {ponderation === 'pondéré' ? 'source,destination,poids' : 'source,destination'} • Les boucles (A,A) sont acceptées ✅
+              • Format: {ponderation === 'pondéré' ? 'source,destination,poids' : 'source,destination'} <br></br>
+              • Les boucles (A,A) sont acceptées ✅
             </div>
           </div>
         )}
@@ -468,7 +469,7 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
               {ponderation === 'non-pondéré' && ' • Utilisez 0 ou 1'}
               {ponderation === 'pondéré' && ' • Utilisez des nombres'}
               <br />
-              ✅ Les boucles (diagonale) sont acceptées
+              • Les boucles (diagonale) sont acceptées
             </div>
           </div>
         )}

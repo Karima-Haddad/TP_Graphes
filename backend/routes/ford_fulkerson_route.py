@@ -3,7 +3,11 @@ Route FastAPI — /api/algorithms/ford-fulkerson
 """
 
 from fastapi import APIRouter
-from services.ford_fulkerson_service import run
+
+try:
+    from backend.services.ford_fulkerson_service import run
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from services.ford_fulkerson_service import run
 
 router = APIRouter()
 

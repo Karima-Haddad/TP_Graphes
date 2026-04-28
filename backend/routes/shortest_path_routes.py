@@ -5,11 +5,14 @@ Expose un seul endpoint POST /api/shortest-path qui dispatch
 vers Dijkstra, Bellman-Ford ou Bellman selon le champ "algorithm".
 """
 
+from typing import Any, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import Any, Optional
 
-from services.shortest_path_service import run_shortest_path
+try:
+    from backend.services.shortest_path_service import run_shortest_path
+except ModuleNotFoundError:  # pragma: no cover - compatibilite uvicorn depuis backend/
+    from services.shortest_path_service import run_shortest_path
 
 router = APIRouter(prefix="/api/shortest-path", tags=["Shortest Path"])
 

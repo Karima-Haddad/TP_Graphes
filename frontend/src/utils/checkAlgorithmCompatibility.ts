@@ -8,7 +8,8 @@ export type CompatibilityResult = {
 
 export function checkAlgorithmCompatibility(
   graph: Graph,
-  algorithm: AlgorithmOption
+  algorithm: AlgorithmOption,
+  graphProperties?: any
 ): CompatibilityResult {
   if (algorithm.requiresWeighted && !graph.weighted) {
     return {
@@ -47,12 +48,25 @@ export function checkAlgorithmCompatibility(
     };
   }
 
-  // if (algorithm.key === "connected-components" && graph.directed) {
-  //   return {
-  //     isCompatible: false,
-  //     message: "Les composantes connexes sont prévues ici pour un graphe non orienté.",
-  //   };
-  // }
+  if (algorithm.key === "ford-fulkerson") {
+    const hasNegativeCapacity = graph.edges.some(
+      (edge) => typeof edge.weight === "number" && edge.weight < 0
+    );
+
+    if (hasNegativeCapacity) {
+      return {
+        isCompatible: false,
+        message: "Ford-Fulkerson ne supporte pas des capacités négatives.",
+      };
+    }
+  }
+
+  if (algorithm.key === "bellman" && graphProperties?.result?.has_cycle) {
+    return {
+      isCompatible: false,
+      message: "Bellman simplifié nécessite un graphe sans circuit.",
+    };
+  }
 
   return {
     isCompatible: true,

@@ -12,6 +12,8 @@ import { AlgorithmVisualizationCard } from "../components/AlgorithmVisualization
 import { executeAlgorithm } from "../services/executionApi";
 import type { ExecutionResponse } from "../types/executionResponse.types";
 import { checkAlgorithmCompatibility } from "../utils/checkAlgorithmCompatibility";
+import { fetchGraphProperties } from "../services/executionApi";
+import { useRef } from "react";
 import "../styles/algorithm-page.css";
 
 const fallbackGraph: Graph = {
@@ -37,6 +39,9 @@ const fallbackGraph: Graph = {
 
 
 export default function AlgorithmPage() {
+  const [graphProperties, setGraphProperties] = useState<any>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+
   const navigate = useNavigate();
 
   function getStoredGraph(): Graph | null {
@@ -62,6 +67,7 @@ export default function AlgorithmPage() {
   const [targetNode, setTargetNode] = useState(graph.nodes[graph.nodes.length - 1]?.id ?? "");
   const [displayMode, setDisplayMode] = useState("Chemin complet + coût");
   const [executionMode, setExecutionMode] = useState("Pas à pas");
+  
 
   const [executionResult, setExecutionResult] = useState<ExecutionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,6 +76,7 @@ export default function AlgorithmPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isStepMode, setIsStepMode] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  
 
   const selectedAlgo = useMemo(
     () => ALGORITHMS.find((algo) => algo.key === selectedAlgorithm)!,
@@ -78,8 +85,8 @@ export default function AlgorithmPage() {
 
 
   const compatibility = useMemo(() => {
-    return checkAlgorithmCompatibility(graph, selectedAlgo);
-  }, [graph, selectedAlgo]);
+    return checkAlgorithmCompatibility(graph, selectedAlgo, graphProperties);
+  }, [graph, selectedAlgo, graphProperties]);
 
   const currentStep =
     executionResult &&
@@ -96,6 +103,13 @@ export default function AlgorithmPage() {
       : 0;
 
   const stepControlsEnabled = executionMode === "Pas à pas" && totalSteps > 0;
+
+  const executionFinished =
+  executionResult?.success === true &&
+  (
+    executionMode !== "Pas à pas" ||
+    currentStepIndex === totalSteps - 1
+  );
 
   const handleNextStep = () => {
     if (
@@ -116,58 +130,83 @@ export default function AlgorithmPage() {
   };
 
   const handleResetSteps = () => {
-    setCurrentStepIndex(0);
     setIsPlaying(false);
+
+    setCurrentStepIndex(0);
+
+    setExecutionResult(null);
+
+    setIsStepMode(false);
   };
 
-  const handlePlay = () => {
-    if (!executionResult || !executionResult.success || totalSteps === 0) return;
-    setIsStepMode(true);
+  const handlePlay = async () => {
+
+    if(!executionResult){
+    await handleExecute();
+    }
+
     setIsPlaying(true);
-  };
+
+    };
 
   const handlePause = () => {
     setIsPlaying(false);
   };
 
+  
   const handleExecute = async () => {
-    if (!compatibility.isCompatible) {
-      setApiError("Exécution impossible : algorithme incompatible avec le graphe.");
-      return;
+  if (!compatibility.isCompatible) {
+    setApiError("Exécution impossible : algorithme incompatible avec le graphe.");
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+    setApiError(null);
+
+    const request = buildExecutionRequest({
+      algorithm: selectedAlgorithm,
+      graph,
+      sourceNode,
+      targetNode,
+    });
+
+    console.log("Execution request:", request);
+
+    const response = await executeAlgorithm(request);
+
+    console.log("Execution response:", response);
+
+
+    setExecutionResult(response);
+
+    const stepsLength =
+      response.success ? response.visualization.steps.length : 0;
+
+    if (executionMode === "Pas à pas") {
+      setCurrentStepIndex(0);
+      setIsStepMode(true);
+      setIsPlaying(false);
+    } else {
+      setCurrentStepIndex(Math.max(stepsLength - 1, 0));
+      setIsStepMode(false);
+      setIsPlaying(false);
     }
-    try {
-      setIsLoading(true);
-      setApiError(null);
 
-      const request = buildExecutionRequest({
-          algorithm: selectedAlgorithm,
-          graph,
-          sourceNode,
-          targetNode,
-        });
+    } catch (error) {
+      console.error(error);
 
-        console.log("Execution request:", request);
+      setApiError(
+        error instanceof Error
+          ? error.message
+          : "Une erreur inconnue est survenue"
+      );
 
-        const response = await executeAlgorithm(request);
-
-        console.log("Execution response:", response);
-
-        setExecutionResult(response);
-        setCurrentStepIndex(0);
-        setIsPlaying(false);
-        setIsStepMode(executionMode === "Pas à pas");
-      } catch (error) {
-        console.error(error);
-
-        setApiError(
-          error instanceof Error
-            ? error.message
-            : "Une erreur inconnue est survenue"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      setIsPlaying(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
     useEffect(() => {
@@ -193,211 +232,493 @@ export default function AlgorithmPage() {
       return () => window.clearTimeout(timer);
     }, [isPlaying, currentStepIndex, executionResult]);
 
+    const summary = (executionResult?.result?.summary as any) || {};
+    const details = (executionResult?.result?.details as any) || {};
+
+    useEffect(() => {
+      setExecutionResult(null);
+      setCurrentStepIndex(0);
+      setIsPlaying(false);
+    }, [selectedAlgorithm]);
+
+
+    useEffect(() => {
+      async function loadProperties() {
+        try {
+          const props = await fetchGraphProperties(graph);
+          console.log("Graph properties:", props);
+          setGraphProperties(props);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      loadProperties();
+    }, [graph]);
+
+    useEffect(() => {
+      if (executionResult?.success === false && resultRef.current) {
+        resultRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }
+    }, [executionResult]);
+    
   return (
-    <div className="algorithm-page">
-      <header className="topbar">
-        <div className="logo">
-          <div className="logo-mark">
-            <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <circle cx="3.5" cy="3.5" r="2.5" fill="white" />
-              <circle cx="14.5" cy="3.5" r="2.5" fill="white" />
-              <circle cx="9" cy="14.5" r="2.5" fill="white" />
-              <line x1="5.8" y1="3.5" x2="12.2" y2="3.5" stroke="white" strokeWidth="1.3" />
-              <line x1="4.5" y1="5.5" x2="8" y2="12.5" stroke="white" strokeWidth="1.3" />
-              <line x1="13.5" y1="5.5" x2="10" y2="12.5" stroke="white" strokeWidth="1.3" />
+<div className="algorithm-page">
+
+<header className="topbar">
+
+<div className="logo">
+<div className="logo-mark">
+<svg viewBox="0 0 18 18" fill="none">
+<circle cx="3.5" cy="3.5" r="2.5" fill="white"/>
+<circle cx="14.5" cy="3.5" r="2.5" fill="white"/>
+<circle cx="9" cy="14.5" r="2.5" fill="white"/>
+<line x1="5.8" y1="3.5" x2="12.2" y2="3.5" stroke="white"/>
+<line x1="4.5" y1="5.5" x2="8" y2="12.5" stroke="white"/>
+<line x1="13.5" y1="5.5" x2="10" y2="12.5" stroke="white"/>
+</svg>
+</div>
+
+Graph<span>Lab</span>
+
+</div>
+
+
+<div className="topbar-nav">
+
+<button
+type="button"
+className="nav-tab done"
+onClick={()=>navigate("/")}
+>
+1. Graphe prêt
+</button>
+
+<button
+type="button"
+className="nav-tab active"
+disabled
+>
+2. Algorithmes & résultats
+</button>
+
+</div>
+
+</header>
+
+
+
+<div className="layout">
+
+<AlgorithmSidebar
+algorithms={ALGORITHMS}
+selectedAlgorithm={selectedAlgorithm}
+onSelect={setSelectedAlgorithm}
+/>
+
+
+<main className="main">
+
+<section className="page-header">
+
+{/* <div className="page-eyebrow">
+Page 02
+</div> */}
+
+<h1 className="page-title">
+Simulation d’algorithmes
+</h1>
+
+<p className="page-desc">
+Configurer, exécuter puis explorer pas à pas.
+</p>
+
+</section>
+
+
+{apiError && (
+<div className="card">
+<div className="result-block highlight">
+<div className="r-label">
+Erreur
+</div>
+
+<div className="r-value">
+{apiError}
+</div>
+
+</div>
+</div>
+)}
+
+
+
+<section className="page-content-fixed">
+
+  <div className="info-full">
+    <AlgorithmInfoCard
+      algorithm={selectedAlgo}
+      graph={graph}
+      compatibility={compatibility}
+    />
+  </div>
+
+  <section className="asymmetric-layout">
+
+  <div className="left-stack">
+
+    <AlgorithmParamsCard
+      graph={graph}
+      algorithm={selectedAlgo}
+      sourceNode={sourceNode}
+      targetNode={targetNode}
+      displayMode={displayMode}
+      executionMode={executionMode}
+      onSourceChange={setSourceNode}
+      onTargetChange={setTargetNode}
+      onDisplayModeChange={setDisplayMode}
+      onExecutionModeChange={setExecutionMode}
+      onExecute={handleExecute}
+      onPlay={handlePlay}
+      onPause={handlePause}
+      onNextStep={handleNextStep}
+      onPrevStep={handlePrevStep}
+      onResetSteps={handleResetSteps}
+      isLoading={isLoading}
+      isPlaying={isPlaying}
+      stepControlsEnabled={stepControlsEnabled}
+      isCompatible={compatibility.isCompatible}
+      executionFinished={executionFinished}
+    />
+
+
+    <div className="card">
+      <div className="card-title">Lecture pas à pas</div>
+
+      {executionFinished && executionResult?.success ? (
+        <div className="execution-finished-card">
+          <div className="finish-icon" aria-hidden="true">
+            <svg
+              width="42"
+              height="42"
+              viewBox="0 0 42 42"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="36"
+                height="36"
+                rx="10"
+                fill="#4f46e5"
+              />
+              <path
+                d="M12 21.5L18.2 27.5L30.5 14.5"
+                stroke="white"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
-          Graph<span>Lab</span>
-        </div>
 
-        {/* <div className="topbar-nav">
-          <span className="nav-tab done">1. Graphe prêt</span>
-          <span className="nav-tab active">2. Algorithme & résultat</span>
-        </div> */}
+      <div className="finish-title">
+        Exécution terminée
+      </div>
 
+      <div className="finish-subtitle">
+        Résultat final de l’algorithme
+      </div>
 
-        <div className="topbar-nav">
-          <button
-            type="button"
-            className="nav-tab done"
-            onClick={() => navigate("/")}
-          >
-            1. Graphe prêt
-          </button>
+      <div className="final-result-box">
 
-          <button
-            type="button"
-            className="nav-tab active"
-            disabled
-          >
-            2. Algorithme & résultat
-          </button>
-        </div>
-
-      </header>
-
-      <div className="layout">
-        <AlgorithmSidebar
-          algorithms={ALGORITHMS}
-          selectedAlgorithm={selectedAlgorithm}
-          onSelect={setSelectedAlgorithm}
-        />
-
-        <main className="main">
-          <section className="page-header">
-            <div className="page-eyebrow">Page 02</div>
-            <h1 className="page-title">Choix de l’algorithme et résultat</h1>
-            <p className="page-desc">
-              Cette page regroupe la sélection de l’algorithme, la saisie des paramètres
-              d’exécution et l’affichage détaillé du résultat obtenu.
-            </p>
-          </section>
-
-
-          {apiError && (
-            <div
-              className="card"
-              style={{
-                marginBottom:"20px",
-                borderColor:"#fecdd3",
-                background:"#fff1f2"
-              }}
-            >
-              <div className="card-title">
-                Erreur d’exécution
-              </div>
-
-              <p>
-                Une erreur est survenue lors de l’exécution.
-                Veuillez réessayer.
-              </p>
-
+        {(selectedAlgorithm==="dijkstra" ||
+          selectedAlgorithm==="bellman-ford" ||
+          selectedAlgorithm==="bellman") && (
+          <>
+            <div className="r-label">
+              Chemin final
             </div>
-          )}
 
-
-          {executionResult && (
-            <div
-              className="card"
-              style={{marginBottom:"20px"}}
-            >
-              <div className="card-title">
-                Réponse brute backend
-              </div>
-
-              <pre>
-                {JSON.stringify(
-                  executionResult,
-                  null,
-                  2
-                )}
-              </pre>
+            <div className="r-value">
+              {summary.path?.join(" → ") || "Aucun chemin n'existe"}
             </div>
-          )}
 
+            <div className="r-label final-label">
+              Distance
+            </div>
 
-          {currentStep && (
-            <div className="card" style={{ marginBottom: "20px" }}>
-              <div className="card-title">
-                Étape courante
-              </div>
+            <div className="final-big-value">
+              {String(summary.distance ?? "—")}
+            </div>
+          </>
+        )}
 
-              <div className="result-block">
-                <div className="r-label">Titre</div>
-                <div className="r-value">{currentStep.title}</div>
-              </div>
+        {(selectedAlgorithm==="prim" ||
+          selectedAlgorithm==="kruskal") && (
+          <>
+            <div className="r-label">
+              Coût total
+            </div>
 
-              <div className="result-block">
-                <div className="r-label">Description</div>
-                <div className="r-value">
-                  {currentStep.description}
-                </div>
-              </div>
+            <div className="final-big-value">
+              {String(summary.total_cost ?? "—")}
+            </div>
 
-              <div className="result-block">
-                <div className="r-label">Progression</div>
+            <div className="r-label final-label">
+              Arêtes retenues
+            </div>
 
-                <div className="r-value">
-                  Étape {currentStepIndex + 1} /{" "}
-                  {executionResult?.success
-                    ? executionResult.visualization.steps.length
-                    : 0}
-                </div>
-              </div>
+            <div className="r-value">
+              {details.mst_edges?.join(", ") || "—"}
+            </div>
+          </>
+        )}
 
+        {(selectedAlgorithm === "connected-components" ||
+          selectedAlgorithm === "strongly-connected-components") && (
+          <>
+            <div className="r-label">
+              Nombre de composantes
+            </div>
 
-              {/* AJOUTER ICI */}
-              {executionResult?.success &&
-                executionResult.visualization.steps.length > 0 && (
-                <div style={{ marginTop:"12px" }}>
-                  <div className="step-bar">
-                    {executionResult.visualization.steps.map(
-                      (_, index) => (
-                        <div
-                          key={index}
-                          className={`step-dot ${
-                            index <= currentStepIndex
-                              ? "done"
-                              : ""
-                          }`}
-                        />
-                      )
-                    )}
+            <div className="final-big-value">
+              {String(summary.count ?? "—")}
+            </div>
+
+            <div className="components-final-grid">
+              {(details.components || []).map((component: string[], index: number) => (
+                <div key={index} className="component-final-card">
+                  <div className="component-final-title">
+                    {selectedAlgorithm === "connected-components"
+                      ? `Composante ${index + 1}`
+                      : `CFC ${index + 1}`}
+                  </div>
+
+                  <div className="component-final-nodes">
+                    {component.map((node: string) => (
+                      <span key={node} className="component-final-node">
+                        {node}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              )}
-
+              ))}
             </div>
-          )}
+          </>
+        )}
 
-          <section className="grid grid-2">
-            <div className="col">
-              <AlgorithmInfoCard
-                algorithm={selectedAlgo}
-                graph={graph}
-                compatibility={compatibility}
-              />
-
-              <AlgorithmParamsCard
-                graph={graph}
-                algorithm={selectedAlgo}
-                sourceNode={sourceNode}
-                targetNode={targetNode}
-                displayMode={displayMode}
-                executionMode={executionMode}
-                onSourceChange={setSourceNode}
-                onTargetChange={setTargetNode}
-                onDisplayModeChange={setDisplayMode}
-                onExecutionModeChange={setExecutionMode}
-                onExecute={handleExecute}
-                onNextStep={handleNextStep}
-                onPrevStep={handlePrevStep}
-                onPlay={handlePlay}
-                onPause={handlePause}
-                onResetSteps={handleResetSteps}
-                isLoading={isLoading}
-                isPlaying={isPlaying}
-                stepControlsEnabled={stepControlsEnabled}
-                isCompatible={compatibility.isCompatible}
-              />
+        {selectedAlgorithm==="euler" && (
+          <>
+            <div className="r-label">
+              Chemin eulérien
             </div>
 
-            <div className="col">
-              <AlgorithmResultCard
-                executionResult={executionResult}
-                isLoading={isLoading}
-              />
-              <AlgorithmVisualizationCard
-                graph={graph}
-                executionResult={executionResult}
-                currentStep={currentStep}
-                sourceNode={sourceNode}
-                targetNode={targetNode}
-              />
+            <div className="r-value">
+              {details.path?.join(" → ") || "Aucun chemin n'est trouvé"}
             </div>
-          </section>
-        </main>
+          </>
+        )}
+
+        {selectedAlgorithm==="welsh-powell" && (
+          <>
+            <div className="r-label">
+              Nombre de couleurs
+            </div>
+
+            <div className="final-big-value">
+              {String(summary.color_count ?? "—")}
+            </div>
+
+            <div className="r-value">
+              {
+                Object.entries(
+                  details.node_colors || {}
+                )
+                .map(
+                  ([n,c])=>`${n}: ${c}`
+                )
+                .join(" | ")
+              }
+            </div>
+          </>
+        )}
+
+        {(selectedAlgorithm === "ford-fulkerson" ||
+          executionResult?.algorithm === "ford_fulkerson") && (
+          <>
+            <div className="r-label">Flot maximum</div>
+
+            <div className="final-big-value">
+              {String(summary.max_flow ?? "—")}
+            </div>
+
+            <div className="r-label final-label">
+              Chemins augmentants
+            </div>
+
+            <div className="r-value">
+              {String(summary.augmenting_paths ?? "—")}
+            </div>
+          </>
+        )}
+
       </div>
     </div>
-  );
+
+  ) : currentStep ? (
+
+    <>
+      <div className="step-focus-card">
+  <div className="step-topline">
+    <span className="step-badge">
+      Étape {currentStepIndex + 1}/{totalSteps}
+    </span>
+
+    <span className="step-type">
+      {selectedAlgorithm === "connected-components"
+        ? "Composantes connexes"
+        : selectedAlgorithm === "strongly-connected-components"
+        ? "Composantes fortement connexes"
+        : "Algorithme"}
+    </span>
+  </div>
+
+  <h3 className="step-title">
+    {currentStep.title}
+  </h3>
+
+  <p className="step-description">
+    {currentStep.description}
+  </p>
+
+  <div className="step-progress">
+    <div
+      className="step-progress-fill"
+      style={{
+        width: `${((currentStepIndex + 1) / totalSteps) * 100}%`,
+      }}
+    />
+  </div>
+
+  <div className="step-state-grid">
+  {(currentStep.state.highlighted_nodes || []).length > 0 && (
+    <div className="step-state-box focus">
+      <div className="r-label">
+        {selectedAlgorithm === "connected-components" ||
+        selectedAlgorithm === "strongly-connected-components"
+          ? "Sommet exploré"
+          : "Sommet en cours"}
+      </div>
+
+      <div className="node-chip-row">
+        {(currentStep.state.highlighted_nodes || []).map((node: string) => (
+          <span key={node} className="node-chip active">
+            {node}
+          </span>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {(currentStep.state.visited_nodes || []).length > 0 &&
+    selectedAlgorithm !== "connected-components" &&
+    selectedAlgorithm !== "strongly-connected-components" && (
+      <div className="step-state-box">
+        <div className="r-label">Sommets visités</div>
+
+        <div className="node-chip-row">
+          {(currentStep.state.visited_nodes || []).map((node: string) => (
+            <span key={node} className="node-chip visited">
+              {node}
+            </span>
+          ))}
+        </div>
+      </div>
+    )}
+
+  {(currentStep.state.selected_nodes || []).length > 0 && (
+    <div className="step-state-box component-box">
+      <div className="r-label">
+        {selectedAlgorithm === "connected-components"
+          ? "Composante en construction"
+          : selectedAlgorithm === "strongly-connected-components"
+          ? "CFC en construction"
+          : "Sommets sélectionnés"}
+      </div>
+
+      <div className="node-chip-row component-row">
+        {(currentStep.state.selected_nodes || []).map((node: string) => (
+          <span key={node} className="node-chip selected">
+            {node}
+          </span>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {(currentStep.state.selected_edges || []).length > 0 && (
+    <div className="step-state-box">
+      <div className="r-label">Arêtes sélectionnées</div>
+
+      <div className="edge-chip-row">
+        {(currentStep.state.selected_edges || []).map((edge: string) => (
+          <span key={edge} className="edge-chip">
+            {edge}
+          </span>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+</div>
+    </>
+
+  ) : (
+
+    <div className="result-block">
+      <div className="r-value">
+        Aucune lecture en cours
+      </div>
+    </div>
+
+  )}
+
+</div>
+
+  </div>
+
+
+  <div className="right-stack">
+    <AlgorithmVisualizationCard
+      graph={graph}
+      executionResult={executionResult}
+      currentStep={currentStep}
+      sourceNode={sourceNode}
+      targetNode={targetNode}
+    />
+  </div>
+
+</section>
+
+
+
+<section className="result-full">
+  <AlgorithmResultCard
+    executionResult={executionResult}
+    isLoading={isLoading}
+  />
+</section>
+</section>
+
+</main>
+
+</div>
+
+</div>
+);
 }

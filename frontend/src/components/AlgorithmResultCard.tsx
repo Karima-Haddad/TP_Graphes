@@ -78,19 +78,29 @@ export function AlgorithmResultCard({
     );
   }
 
-  if (!executionResult.success) {
+  if (executionResult.success === false) {
     return (
-      <div className="card">
-        <div className="card-title">Résultat textuel</div>
-
-        <div className="result-block highlight">
-          <div className="r-label">État</div>
-          <div className="r-value">Échec d’exécution</div>
+      <div className="card result-card-error">
+        <div className="card-title">
+          Résultat textuel
         </div>
 
-        <div className="result-block">
-          <div className="r-label">Message</div>
-          <div className="r-value">{executionResult.message}</div>
+        <div className="result-block backend-error-block">
+
+          <div className="backend-error-icon">
+             ⚠
+          </div>
+
+          <div className="r-label error-label">
+            Exécution échouée
+          </div>
+
+          <div className="r-value error-message">
+            {executionResult.message ||
+             executionResult.error?.code ||
+             "Erreur lors de l'exécution"}
+          </div>
+
         </div>
       </div>
     );

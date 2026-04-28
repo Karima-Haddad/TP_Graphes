@@ -1,6 +1,6 @@
 import type { Graph } from '../types/graph.types';
 
-const CLÉ_GRAPHE = 'graphe_application';
+const CLÉ_GRAPHE = 'graphData';
 const CLÉ_HISTORIQUE = 'historique_graphes';
 
 export const storageLocal = {

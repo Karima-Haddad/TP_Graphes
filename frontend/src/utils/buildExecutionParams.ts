@@ -15,6 +15,7 @@ export function buildExecutionParams({
     case "dijkstra":
     case "bellman-ford":
     case "bellman":
+    case "ford-fulkerson":
       return {
         source: sourceNode,
         target: targetNode,
