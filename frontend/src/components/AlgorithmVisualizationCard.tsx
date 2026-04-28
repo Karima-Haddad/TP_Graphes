@@ -42,7 +42,6 @@ export function AlgorithmVisualizationCard({
 
 
   const nodeColors = visualState?.node_colors ?? {};
-  const edgeColors = visualState?.edge_colors ?? {};
   const nodeLabels = visualState?.node_labels ?? {};
   const edgeLabels = visualState?.edge_labels ?? {};
 
@@ -246,8 +245,6 @@ export function AlgorithmVisualizationCard({
 
             const isHighlighted = highlightedEdges.has(edge.id);
 
-            const stroke =
-              edgeColors[edge.id] ?? (isHighlighted ? "#4f46e5" : "#d8d3cb");
 
             const displayedLabel =
               edgeLabels[edge.id] ??
@@ -331,19 +328,6 @@ export function AlgorithmVisualizationCard({
             const isHighlightedNode = highlightedNodes.has(node.id);
             const isSelectedNode = selectedNodes.includes(node.id);
 
-            const nodeFill = isHighlightedNode
-              ? "#fff7ed"
-              : isSelectedNode
-              ? "#eef2ff"
-              : "#ffffff";
-
-            const nodeStroke = isHighlightedNode
-              ? "#f97316"
-              : isSelectedNode
-              ? "#4f46e5"
-              : "#d6d3d1";
-
-            const nodeStrokeWidth = isHighlightedNode || isSelectedNode ? 3 : 1.5;
 
             const x = node.x ?? 0;
             const y = node.y ?? 0;
