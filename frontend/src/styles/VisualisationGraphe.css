@@ -52,3 +52,18 @@
   top: 0;
   left: 0;
 }
+
+.visual-zone::before {
+  pointer-events: none;
+}
+
+.graph-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.node-circle {
+  pointer-events: auto;
+}

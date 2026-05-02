@@ -22,123 +22,49 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph,
   const [positions, setPositions] = useState<Map<string, NodePosition>>(new Map());
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const animationRef = useRef<number | null>(null);
-  const isRunningRef = useRef(false);
 
   // Initialiser les positions quand le graph change
-  useEffect(() => {
-    if (!graph) return;
+ useEffect(() => {
+  if (!graph) return;
 
-    isRunningRef.current = false;
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
+  setDragging(null);
+  setDragOffset({ x: 0, y: 0 });
 
-    setDragging(null);
-    setDragOffset({ x: 0, y: 0 });
+  const initialPositions = new Map<string, NodePosition>();
 
-    const initialPositions = new Map<string, NodePosition>();
-    const centerX = 400;
-    const centerY = 195;
-    const radius = 140;
+  const defaultPositions = [
+    { x: 120, y: 120 }, // A
+    { x: 320, y: 95 },  // B
+    { x: 230, y: 255 }, // C
+    { x: 520, y: 125 }, // D
+    { x: 620, y: 280 }, // E
+    { x: 420, y: 300 },
+  ];
 
-    graph.nodes.forEach((node, index) => {
-      const angle = (index * 2 * Math.PI) / graph.nodes.length - Math.PI / 2;
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
-
-      initialPositions.set(node.id, {
-        x,
-        y,
-        vx: 0,
-        vy: 0,
-        fixed: false,
-      });
-    });
-
-    positionsRef.current = initialPositions;
-    setPositions(new Map(initialPositions));
-
-    isRunningRef.current = true;
-    startSimulation(graph);
-  }, [graph]);
-
-  // Fonction de simulation
-  const startSimulation = (currentGraph: Graph) => {
-    const simulate = () => {
-      if (!isRunningRef.current) return;
-
-      positionsRef.current.forEach((nodePos, nodeId) => {
-        if (nodePos.fixed) return;
-
-        let fx = 0;
-        let fy = 0;
-
-        const k = 0.001; // ✅ RÉDUIT DE 100x
-        const c = 0.95; // ✅ Moins d'amortissement
-        const repulsion = 1000; // ✅ RÉDUIT DE 5x
-
-        // Répulsion entre nœuds
-        positionsRef.current.forEach((otherPos, otherId) => {
-          if (nodeId === otherId) return;
-
-          const dx = nodePos.x - otherPos.x;
-          const dy = nodePos.y - otherPos.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-          const force = repulsion / (dist * dist);
-          fx += (dx / dist) * force;
-          fy += (dy / dist) * force;
-        });
-
-        // Attraction vers les nœuds connectés - ✅ TRÈS FAIBLE
-        currentGraph.edges.forEach((edge) => {
-          if (edge.source === nodeId) {
-            const other = positionsRef.current.get(edge.target);
-            if (!other) return;
-
-            const dx = other.x - nodePos.x;
-            const dy = other.y - nodePos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-            const force = k * dist * 0.1; // ✅ Encore plus réduit
-            fx += (dx / dist) * force;
-            fy += (dy / dist) * force;
-          } else if (edge.target === nodeId) {
-            const other = positionsRef.current.get(edge.source);
-            if (!other) return;
-
-            const dx = other.x - nodePos.x;
-            const dy = other.y - nodePos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-            const force = k * dist * 0.1; // ✅ Encore plus réduit
-            fx += (dx / dist) * force;
-            fy += (dy / dist) * force;
-          }
-        });
-
-        // Appliquer les forces
-        nodePos.vx = (nodePos.vx + fx) * c;
-        nodePos.vy = (nodePos.vy + fy) * c;
-
-        nodePos.x += nodePos.vx;
-        nodePos.y += nodePos.vy;
-
-        // Limiter dans la zone
-        const padding = 40;
-        nodePos.x = Math.max(padding, Math.min(790 - padding, nodePos.x));
-        nodePos.y = Math.max(padding, Math.min(360 - padding, nodePos.y));
-      });
-
-      // Mettre à jour le state React
-      setPositions(new Map(positionsRef.current));
-      animationRef.current = requestAnimationFrame(simulate);
+  graph.nodes.forEach((node, index) => {
+    const fallback = defaultPositions[index] ?? {
+      x: 120 + (index % 4) * 170,
+      y: 100 + Math.floor(index / 4) * 120,
     };
 
-    animationRef.current = requestAnimationFrame(simulate);
-  };
+    const oldPos = positionsRef.current.get(node.id);
+
+    const x = oldPos?.x ?? fallback.x;
+    const y = oldPos?.y ?? fallback.y;
+
+    initialPositions.set(node.id, {
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      fixed: true,
+    });
+  });
+
+  positionsRef.current = initialPositions;
+  setPositions(new Map(initialPositions));
+}, [graph?.nodes.length]);
+
 
   // Gestion du drag - Mouse Down
   const handleMouseDown = (e: React.MouseEvent<SVGCircleElement>, nodeId: string) => {
@@ -195,14 +121,31 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph,
 
   // Gestion du drag - Mouse Up
   const handleMouseUp = () => {
-    if (dragging) {
-      const pos = positionsRef.current.get(dragging);
-      if (pos) {
-        pos.fixed = false; // ✅ Libérer le nœud
-        // Ne pas réinitialiser vx/vy pour laisser l'inertie
-      }
-      setDragging(null);
+    if (!dragging || !graph) return;
+
+    const pos = positionsRef.current.get(dragging);
+
+    if (pos) {
+      pos.fixed = true;
+      pos.vx = 0;
+      pos.vy = 0;
     }
+
+    const updatedNodes = graph.nodes.map((node) => {
+      const p = positionsRef.current.get(node.id);
+      return {
+        ...node,
+        x: p?.x ?? node.x,
+        y: p?.y ?? node.y,
+      };
+    });
+
+    onGraphChange?.({
+      ...graph,
+      nodes: updatedNodes,
+    });
+
+    setDragging(null);
   };
 
   useEffect(() => {
@@ -211,16 +154,6 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph,
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [dragging]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      isRunningRef.current = false;
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
 
   // Fonctions utilitaires pour Bezier
   const pointSurBezier = (
@@ -262,31 +195,6 @@ export const VisualisationGraphe: React.FC<PropsVisualisationGraphe> = ({ graph,
     svg.innerHTML = '';
 
     const nodeRadius = 28;
-
-    const updatedNodes = graph.nodes.map((node) => {
-  const pos = positions.get(node.id);
-
-  return {
-    ...node,
-    x: pos?.x ?? node.x,
-    y: pos?.y ?? node.y,
-  };
-});
-
-const positionsDifferent =
-  graph.nodes.some((node, index) => {
-    return (
-      node.x !== updatedNodes[index].x ||
-      node.y !== updatedNodes[index].y
-    );
-  });
-
-if (positionsDifferent) {
-  onGraphChange?.({
-    ...graph,
-    nodes: updatedNodes,
-  });
-}
 
     // Groupe pour les arêtes
     const edgesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');

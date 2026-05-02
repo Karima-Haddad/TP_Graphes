@@ -102,23 +102,38 @@ class GraphAnalyzer:
     # 7. Graphe connexe ou non
     # --------------------------------------------------
     def is_connected(self):
+        """
+        Vérifie la connexité en ignorant l'orientation.
+        Donc même si le graphe est orienté, on le traite comme non orienté.
+        """
         if not self.nodes:
             return True
-        if not self.directed:
-            start = self.nodes[0]["id"]
-            visited = set()
-            queue = deque([start])
-            while queue:
-                node = queue.popleft()
-                if node in visited:
-                    continue
-                visited.add(node)
-                for neigh, _ in self.adj_list.get(node, []):
-                    if neigh not in visited:
-                        queue.append(neigh)
-            return len(visited) == len(self.nodes)
-        else:
-            return self.is_strongly_connected()
+
+        adj_undirected = defaultdict(list)
+
+        for e in self.edges:
+            s = e["source"]
+            t = e["target"]
+            adj_undirected[s].append(t)
+            adj_undirected[t].append(s)
+
+        start = self.nodes[0]["id"]
+        visited = set()
+        queue = deque([start])
+
+        while queue:
+            node = queue.popleft()
+
+            if node in visited:
+                continue
+
+            visited.add(node)
+
+            for neigh in adj_undirected.get(node, []):
+                if neigh not in visited:
+                    queue.append(neigh)
+
+        return len(visited) == len(self.nodes)
 
     def is_strongly_connected(self):
         if not self.nodes:

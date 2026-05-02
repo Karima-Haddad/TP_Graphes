@@ -8,13 +8,16 @@ interface PropsFormuleGraphe {
 }
 
 export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) => {
-  const [modeEntree, setModeEntree] = useState('manuel');
   const [representation, setRepresentation] = useState('liste');
   const [orientation, setOrientation] = useState('non-orienté');
   const [ponderation, setPonderation] = useState('pondéré');
   const [nombreSommets, setNombreSommets] = useState('5');
   const [listeSommets, setListeSommets] = useState('A, B, C, D, E');
   const [aretes, setAretes] = useState('A,B,4\nA,C,2\nB,D,5\nC,D,1\nD,E,3');
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error' | 'info';
+    text: string;
+  } | null>(null);
   const [matrice, setMatrice] = useState<string[][]>([
     ['0', '4', '2', '0', '0'],
     ['4', '0', '0', '5', '0'],
@@ -23,12 +26,69 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
     ['0', '0', '0', '3', '0'],
   ]);
 
+
+  useEffect(() => {
+    const graph = storageLocal.obtenirGraphe();
+    if (!graph) return;
+
+    setOrientation(graph.directed ? "orienté" : "non-orienté");
+    setPonderation(graph.weighted ? "pondéré" : "non-pondéré");
+    setRepresentation("liste");
+
+    setNombreSommets(String(graph.nodes.length));
+    setListeSommets(graph.nodes.map((n) => n.label ?? n.id).join(", "));
+
+    const edgesText = graph.edges
+      .map((e) => {
+        if (graph.weighted) {
+          return `${e.source},${e.target},${e.weight ?? e.label ?? 1}`;
+        }
+        return `${e.source},${e.target}`;
+      })
+      .join("\n");
+
+    setAretes(edgesText);
+
+    // reconstruire la matrice aussi
+    const labels = graph.nodes.map((n) => n.id);
+    const n = labels.length;
+
+    const newMatrice = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => "0")
+    );
+
+    graph.edges.forEach((edge) => {
+      const i = labels.indexOf(edge.source);
+      const j = labels.indexOf(edge.target);
+
+      if (i === -1 || j === -1) return;
+
+      const value = graph.weighted ? String(edge.weight ?? 1) : "1";
+
+      newMatrice[i][j] = value;
+
+      if (!graph.directed && i !== j) {
+        newMatrice[j][i] = value;
+      }
+    });
+
+    setMatrice(newMatrice);
+  }, []);
+
+
   useEffect(() => {
     const nombre = parseInt(nombreSommets);
-    if (!isNaN(nombre) && nombre > 0) {
+
+    if (!isNaN(nombre) && nombre > 0 && matrice.length !== nombre) {
       initialiserMatrice(nombre);
     }
   }, [nombreSommets]);
+  // useEffect(() => {
+  //   const nombre = parseInt(nombreSommets);
+  //   if (!isNaN(nombre) && nombre > 0) {
+  //     initialiserMatrice(nombre);
+  //   }
+  // }, [nombreSommets]);
 
   const initialiserMatrice = (nombre: number) => {
     const newMatrice: string[][] = [];
@@ -59,32 +119,45 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
 
   const validerNombreSommets = (): { valide: boolean; message: string } => {
     const nombre = parseInt(nombreSommets);
-    if (isNaN(nombre) || nombre <= 0) {
-      return { valide: false, message: '❌ Le nombre de sommets doit être un nombre positif' };
+
+    if (isNaN(nombre) || nombre < 0) {
+      return { valide: false, message: 'Le nombre de sommets doit être supérieur ou égal à 0' };
     }
+
     return { valide: true, message: '' };
   };
 
-  const validerListeSommets = (): { valide: boolean; message: string; sommets: string[] } => {
+  const validerListeSommets = (): {
+    valide: boolean;
+    message: string;
+    sommets: string[];
+  } => {
+    const nombreAttendu = parseInt(nombreSommets);
+
+    // cas graphe vide
+    if (nombreAttendu === 0) {
+      return { valide: true, message: '', sommets: [] };
+    }
+
     const sommetsTexte = listeSommets
       .split(',')
       .map(s => s.trim())
       .filter(s => s.length > 0);
 
-    const nombreAttendu = parseInt(nombreSommets);
-
+    // 🔥 ERREUR PRINCIPALE (ton besoin)
     if (sommetsTexte.length !== nombreAttendu) {
       return {
         valide: false,
-        message: `❌ Vous avez ${sommetsTexte.length} sommets, mais vous en avez déclaré ${nombreAttendu}`,
+        message: `Nombre de sommets incorrect ❌ (${sommetsTexte.length}/${nombreAttendu})`,
         sommets: [],
       };
     }
 
+    // doublons
     if (new Set(sommetsTexte).size !== sommetsTexte.length) {
       return {
         valide: false,
-        message: '❌ Les noms des sommets ne peuvent pas se répéter',
+        message: 'Les sommets ne doivent pas être dupliqués ❌',
         sommets: [],
       };
     }
@@ -99,7 +172,7 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
       .filter(a => a.length > 0);
 
     if (aretesTexte.length === 0) {
-      return { valide: false, message: '❌ Vous devez entrer au moins une arête', edges: [] };
+      return { valide: true, message: '', edges: [] };
     }
 
     const edges: GraphEdge[] = [];
@@ -260,13 +333,13 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
     try {
       const validNombre = validerNombreSommets();
       if (!validNombre.valide) {
-        alert(validNombre.message);
+        setFeedback({ type: 'error', text: validNombre.message });
         return;
       }
 
       const validSommets = validerListeSommets();
       if (!validSommets.valide) {
-        alert(validSommets.message);
+        setFeedback({ type: 'error', text: validSommets.message });
         return;
       }
 
@@ -275,14 +348,14 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
       if (representation === 'liste') {
         const validAretes = validerAretes(validSommets.sommets);
         if (!validAretes.valide) {
-          alert(validAretes.message);
+          setFeedback({ type: 'error', text: validAretes.message });
           return;
         }
         edges = validAretes.edges;
       } else {
         const validMatrice = validerMatrice(validSommets.sommets);
         if (!validMatrice.valide) {
-          alert(validMatrice.message);
+          setFeedback({ type: 'error', text: validMatrice.message });
           return;
         }
         edges = validMatrice.edges;
@@ -306,9 +379,15 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
       storageLocal.ajouterAuHistorique(graph);
       onGrapheCreé(graph);
 
-      alert('✅ Graphe créé avec succès!');
+    //   setFeedback({
+    //   type: 'success',
+    //   text: 'Graphe créé avec succès'
+    // });
     } catch (erreur) {
-      alert(`❌ Erreur: ${erreur}`);
+      setFeedback({
+        type: 'error',
+        text: `Erreur inattendue : ${erreur}`
+      });
     }
   };
 
@@ -321,16 +400,15 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
     setAretes('A,B,4\nA,C,2\nB,D,5\nC,D,1\nD,E,3');
     initialiserMatrice(5);
     storageLocal.effacerGraphe();
+    setFeedback(null);
+    onGrapheCreé({
+      directed: false,
+      weighted: true,
+      nodes: [],
+      edges: [],
+    });
   };
 
-  const chargerExemple = () => {
-    setNombreSommets('5');
-    setListeSommets('A, B, C, D, E');
-    setAretes('A,B,4\nA,C,2\nB,D,5\nC,D,1\nD,E,3');
-    setOrientation('non-orienté');
-    setPonderation('pondéré');
-    setRepresentation('liste');
-  };
 
   const sommetsArray = listeSommets.split(',').map(s => s.trim());
 
@@ -339,15 +417,19 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
       <div className="card">
         <div className="card-title">Configuration du graphe</div>
 
+        {feedback && (
+          <div className={`feedback ${feedback.type}`}>
+            <span className="icon">
+              {feedback.type === 'success' && '✔'}
+              {feedback.type === 'error' && '⚠'}
+              {feedback.type === 'info' && 'ℹ'}
+            </span>
+            <span>{feedback.text}</span>
+          </div>
+        )}
+
         {/* ROW 1: Mode et Représentation */}
         <div className="form-row">
-          <div className="field">
-            <label>Mode de saisie</label>
-            <select value={modeEntree} onChange={(e) => setModeEntree(e.target.value)}>
-              <option value="manuel">Créer manuellement</option>
-              <option value="import">Importer un fichier</option>
-            </select>
-          </div>
           <div className="field">
             <label>Représentation</label>
             <select value={representation} onChange={(e) => setRepresentation(e.target.value)}>
@@ -465,7 +547,7 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
               </table>
             </div>
             <div className="section-hint">
-              {orientation === 'non-orienté' && '📋 Matrice symétrique requise (sauf diagonale)'}
+              {orientation === 'non-orienté' && '•  Matrice symétrique requise (sauf diagonale)'}<br />
               {ponderation === 'non-pondéré' && ' • Utilisez 0 ou 1'}
               {ponderation === 'pondéré' && ' • Utilisez des nombres'}
               <br />
@@ -481,9 +563,6 @@ export const FormuleGraphe: React.FC<PropsFormuleGraphe> = ({ onGrapheCreé }) =
           </button>
           <button className="btn btn-secondary" onClick={réinitialiser}>
             Réinitialiser
-          </button>
-          <button className="btn btn-secondary" onClick={chargerExemple}>
-            Exemple
           </button>
         </div>
       </div>

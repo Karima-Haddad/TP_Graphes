@@ -10,6 +10,19 @@ function renderArray(value: unknown) {
   return value.join(" → ");
 }
 
+function getEulerPath(summary: Record<string, unknown>, details: Record<string, unknown>) {
+  return (
+    details.path ||
+    details.euler_path ||
+    details.circuit ||
+    details.eulerian_path ||
+    summary.path ||
+    summary.euler_path ||
+    summary.circuit ||
+    []
+  );
+}
+
 function renderComponents(value: unknown) {
   if (!Array.isArray(value)) return null;
 
@@ -179,33 +192,24 @@ export function AlgorithmResultCard({
         </>
       )}
 
-      {isEuler && (() => {
-        const eulerPath = Array.isArray(details.path) ? details.path : [];
-        const exists = Boolean(summary.exists) && eulerPath.length > 0;
+      {isEuler && (
+        <>
+          <div className="result-block">
+            <div className="r-label">Existe</div>
+            <div className="r-value">{String(summary.exists ?? "—")}</div>
+          </div>
 
-        return (
-          <>
-            <div className={exists ? "result-block success" : "result-block backend-error-block"}>
-              <div className="r-label">Existe</div>
-              <div className="r-value">{exists ? "Oui" : "Non"}</div>
-            </div>
+          <div className="result-block">
+            <div className="r-label">Type</div>
+            <div className="r-value">{String(summary.type ?? "—")}</div>
+          </div>
 
-            <div className="result-block">
-              <div className="r-label">Type</div>
-              <div className="r-value">
-                {exists ? String(summary.type ?? "—") : "Aucun chemin/circuit eulérien"}
-              </div>
-            </div>
-
-            <div className="result-block">
-              <div className="r-label">Chemin</div>
-              <div className="r-value">
-                {exists ? eulerPath.join(" → ") : "Aucun chemin n'est trouvé"}
-              </div>
-            </div>
-          </>
-        );
-      })()}
+          <div className="result-block">
+            <div className="r-label">Chemin</div>
+            <div className="r-value"> {renderArray(getEulerPath(summary, details))}</div>
+          </div>
+        </>
+      )}
 
       {isColoring && (
         <>
