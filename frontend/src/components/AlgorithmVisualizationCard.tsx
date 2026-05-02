@@ -191,7 +191,6 @@ export function AlgorithmVisualizationCard({
           </defs>
 
           {graph.edges.map((edge) => {
-
             const isHighlightedEdge = highlightedEdges.has(edge.id);
             const isSelectedEdge = selectedEdges.includes(edge.id);
 
@@ -213,38 +212,51 @@ export function AlgorithmVisualizationCard({
             const x2 = target.x ?? 0;
             const y2 = target.y ?? 0;
 
-            const opposite = graph.edges.some(
-                (e) => e.source === edge.target && e.target === edge.source
-              );
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy) || 1;
 
-              const dx = x2 - x1;
-              const dy = y2 - y1;
-              const length = Math.sqrt(dx * dx + dy * dy) || 1;
+            const nodeRadius = 26;
 
-              const nodeRadius = 26;
+            const startX = x1 + (dx / length) * nodeRadius;
+            const startY = y1 + (dy / length) * nodeRadius;
+            const endX = x2 - (dx / length) * nodeRadius;
+            const endY = y2 - (dy / length) * nodeRadius;
 
-              const startX = x1 + (dx / length) * nodeRadius;
-              const startY = y1 + (dy / length) * nodeRadius;
-              const endX = x2 - (dx / length) * nodeRadius;
-              const endY = y2 - (dy / length) * nodeRadius;
+            const samePairEdges = graph.edges.filter(
+              (e) =>
+                (e.source === edge.source && e.target === edge.target) ||
+                (e.source === edge.target && e.target === edge.source)
+            );
 
-              const curve = opposite ? 35 : 0;
-              const normalX = -dy / length;
-              const normalY = dx / length;
+            const edgeIndex = samePairEdges.findIndex((e) => e.id === edge.id);
+            const hasParallelEdges = samePairEdges.length > 1;
 
-              const controlX = (startX + endX) / 2 + normalX * curve;
-              const controlY = (startY + endY) / 2 + normalY * curve;
+            const normalX = -dy / length;
+            const normalY = dx / length;
 
-              const labelX = opposite
-                ? 0.25 * startX + 0.5 * controlX + 0.25 * endX
-                : (startX + endX) / 2;
+            const directionSign = edge.source < edge.target ? 1 : -1;
 
-              const labelY = opposite
-                ? 0.25 * startY + 0.5 * controlY + 0.25 * endY
-                : (startY + endY) / 2;
+            const offset = hasParallelEdges
+              ? (edgeIndex - (samePairEdges.length - 1) / 2) * 48 * directionSign
+              : 0;
+
+            const controlX = (startX + endX) / 2 + normalX * offset;
+            const controlY = (startY + endY) / 2 + normalY * offset;
+
+            const pathD = hasParallelEdges
+              ? `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`
+              : `M ${startX} ${startY} L ${endX} ${endY}`;
+
+            const labelX = hasParallelEdges
+              ? 0.25 * startX + 0.5 * controlX + 0.25 * endX
+              : (startX + endX) / 2;
+
+            const labelY = hasParallelEdges
+              ? 0.25 * startY + 0.5 * controlY + 0.25 * endY
+              : (startY + endY) / 2;
 
             const isHighlighted = highlightedEdges.has(edge.id);
-
 
             const displayedLabel =
               edgeLabels[edge.id] ??
@@ -253,60 +265,30 @@ export function AlgorithmVisualizationCard({
 
             return (
               <g key={edge.id}>
-                {(() => {
-                    const opposite = graph.edges.some(
-                      (e) => e.source === edge.target && e.target === edge.source
-                    );
-
-                    const dx = x2 - x1;
-                    const dy = y2 - y1;
-                    const length = Math.sqrt(dx * dx + dy * dy) || 1;
-
-                    const nodeRadius = 26;
-
-                    const startX = x1 + (dx / length) * nodeRadius;
-                    const startY = y1 + (dy / length) * nodeRadius;
-                    const endX = x2 - (dx / length) * nodeRadius;
-                    const endY = y2 - (dy / length) * nodeRadius;
-
-                    const curve = opposite ? 35 : 0;
-                    const normalX = -dy / length;
-                    const normalY = dx / length;
-
-                    const controlX = (startX + endX) / 2 + normalX * curve;
-                    const controlY = (startY + endY) / 2 + normalY * curve;
-
-                    const pathD = opposite
-                      ? `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`
-                      : `M ${startX} ${startY} L ${endX} ${endY}`;
-
-                    return (
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={edgeColor}
-                        strokeWidth={edgeWidth}
-                        className={
-                          isHighlightedEdge
-                            ? "graph-edge path-highlight edge-pulse"
-                            : isHighlighted
-                            ? "graph-edge path-highlight"
-                            : "graph-edge"
-                        }
-                        markerEnd={graph.directed ? "url(#arrowhead)" : undefined}
-                      />
-                    );
-                  })()}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke={edgeColor}
+                  strokeWidth={edgeWidth}
+                  className={
+                    isHighlightedEdge
+                      ? "graph-edge path-highlight edge-pulse"
+                      : isHighlighted
+                      ? "graph-edge path-highlight"
+                      : "graph-edge"
+                  }
+                  markerEnd={graph.directed ? "url(#arrowhead)" : undefined}
+                />
 
                 {displayedLabel && (
                   <g transform={`translate(${labelX},${labelY - 10})`}>
                     <rect
                       className="graph-edge-badge"
-                      x="-16"
+                      x="-18"
                       y="-10"
                       rx="8"
                       ry="8"
-                      width="32"
+                      width="36"
                       height="20"
                     />
                     <text
@@ -347,7 +329,7 @@ export function AlgorithmVisualizationCard({
             }
 
             if (isTarget) {
-              gradient = "url(#nodeGradientTarget)";
+              gradient = "url(#nodeGradientDefault)";
               textColor = "#ffffff";
               ringColor = "rgba(21,128,61,.30)";
             }
@@ -482,7 +464,7 @@ export function AlgorithmVisualizationCard({
         </svg>
       </div>
 
-      <div className="graph-legend">
+      {/* <div className="graph-legend">
         <span className="legend-chip legend-source">● Source</span>
         <span className="legend-chip legend-target">
           ● {executionResult?.algorithm === "ford-fulkerson"
@@ -491,7 +473,7 @@ export function AlgorithmVisualizationCard({
         </span>
         <span className="legend-chip legend-default">● Sommet normal</span>
         <span className="legend-chip legend-highlight">● Résultat</span>
-      </div>
+      </div> */}
     </div>
   );
 }

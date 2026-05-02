@@ -111,43 +111,101 @@ export function AlgorithmParamsCard({
           onClick={onExecute}
           disabled={isLoading || !isCompatible || executionFinished}
         >
-          {isStepMode ? "▶ Lire les étapes" : "⚡ Lancer l’algorithme"}
+          {isStepMode ? (
+            <>
+              <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M8 5v14l11-7L8 5Z" fill="currentColor" />
+              </svg>
+              Lire les étapes
+            </>
+          ) : (
+            <>
+              <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M13 2L4 14h7l-1 8 10-13h-7l1-7Z" fill="currentColor" />
+              </svg>
+              Lancer l’algorithme
+            </>
+          )}
         </button>
 
         <button
           type="button"
-          className="btn btn-ghost"
+          className="btn btn-ghost btn-icon-only"
           onClick={onPrevStep}
           disabled={!stepControlsEnabled || executionFinished}
         >
-          ← Étape précédente
+          <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M15 6L9 12L15 18"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
 
         <button
           type="button"
-          className="btn btn-ghost"
+          className="btn btn-ghost btn-icon-only"
           onClick={onNextStep}
           disabled={!stepControlsEnabled || executionFinished}
         >
-          → Étape suivante
+          <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M9 6L15 12L9 18"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
 
         <button
           type="button"
-          className="btn btn-ghost"
+          className="btn btn-ghost btn-icon-only"
           onClick={onPause}
           disabled={!isPlaying || executionFinished}
         >
-          ⏸ Pause
+          <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M8 5V19"
+              stroke="currentColor"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+            />
+            <path
+              d="M16 5V19"
+              stroke="currentColor"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+            />
+          </svg>
         </button>
 
         <button
           type="button"
-          className="btn btn-ghost btn-reset"
+          className="btn btn-ghost btn-reset btn-icon-only"
           onClick={onResetSteps}
           disabled={isLoading}
         >
-          ↺ Réinitialiser
+          <svg className="btn-icon" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M4 12A8 8 0 1 0 6.35 6.35"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4 4V9H9"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
 

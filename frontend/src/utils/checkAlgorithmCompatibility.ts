@@ -39,7 +39,7 @@ export function checkAlgorithmCompatibility(
   }
 
   if (
-    (algorithm.key === "prim" || algorithm.key === "kruskal") &&
+  (algorithm.key === "prim" || algorithm.key === "kruskal") &&
     graph.directed
   ) {
     return {
@@ -47,6 +47,14 @@ export function checkAlgorithmCompatibility(
       message: "Prim et Kruskal s’appliquent à un graphe non orienté.",
     };
   }
+
+  if (algorithm.key === "prim" && graphProperties?.result?.summary?.count > 1) {
+    return {
+      isCompatible: false,
+      message: "Prim nécessite un graphe connexe.",
+    };
+  }
+
 
   if (algorithm.key === "ford-fulkerson") {
     const hasNegativeCapacity = graph.edges.some(
