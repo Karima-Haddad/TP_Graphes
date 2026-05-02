@@ -1879,3 +1879,155 @@ grid-template-columns:1fr;
   height: 28px;
   font-size: 11px;
 }
+
+
+
+
+
+/* Carte Lecture pas à pas fixe */
+.left-stack > .card:nth-child(2) {
+  height: 560px;
+  min-height: 560px;
+  max-height: 560px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Carte étape */
+.step-focus-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* Haut compact */
+.step-title {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.step-description {
+  font-size: 15px;
+  line-height: 1.55;
+  margin-bottom: 4px;
+}
+
+.step-progress {
+  height: 9px;
+  margin-bottom: 6px;
+}
+
+/* Grille fixe : chaque ligne garde sa place */
+.step-state-grid {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 1.25fr 0.85fr 0.85fr 0.9fr;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Toutes les boîtes compactes */
+.step-state-box {
+  min-height: 0;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Bloc arêtes triées compact */
+.sorted-edges-box {
+  min-height: 0;
+  border-color: var(--amber-border);
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 80%);
+}
+
+/* Titre interne compact */
+.step-state-box .r-label {
+  font-size: 10px;
+  margin-bottom: 7px;
+  line-height: 1;
+}
+
+/* Chips sommets */
+.node-chip-row,
+.edge-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.node-chip {
+  width: 27px;
+  height: 27px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* Chips arêtes */
+.edge-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+
+.step-state-box {
+  position: relative;
+  min-height: 54px;
+  padding: 18px 10px 8px;
+  justify-content: center;
+}
+
+.step-state-box .r-label {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  font-size: 9px;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+
+.node-chip-row,
+.edge-chip-row {
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.node-chip {
+  width: 25px;
+  height: 25px;
+  font-size: 10px;
+}
+
+.edge-chip {
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-icon-only {
+  width: 42px;
+  height: 38px;
+  padding: 0;
+}

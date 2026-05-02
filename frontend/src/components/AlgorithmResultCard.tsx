@@ -179,24 +179,33 @@ export function AlgorithmResultCard({
         </>
       )}
 
-      {isEuler && (
-        <>
-          <div className="result-block">
-            <div className="r-label">Existe</div>
-            <div className="r-value">{String(summary.exists ?? "—")}</div>
-          </div>
+      {isEuler && (() => {
+        const eulerPath = Array.isArray(details.path) ? details.path : [];
+        const exists = Boolean(summary.exists) && eulerPath.length > 0;
 
-          <div className="result-block">
-            <div className="r-label">Type</div>
-            <div className="r-value">{String(summary.type ?? "—")}</div>
-          </div>
+        return (
+          <>
+            <div className={exists ? "result-block success" : "result-block backend-error-block"}>
+              <div className="r-label">Existe</div>
+              <div className="r-value">{exists ? "Oui" : "Non"}</div>
+            </div>
 
-          <div className="result-block">
-            <div className="r-label">Chemin</div>
-            <div className="r-value">{renderArray(details.path)}</div>
-          </div>
-        </>
-      )}
+            <div className="result-block">
+              <div className="r-label">Type</div>
+              <div className="r-value">
+                {exists ? String(summary.type ?? "—") : "Aucun chemin/circuit eulérien"}
+              </div>
+            </div>
+
+            <div className="result-block">
+              <div className="r-label">Chemin</div>
+              <div className="r-value">
+                {exists ? eulerPath.join(" → ") : "Aucun chemin n'est trouvé"}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {isColoring && (
         <>

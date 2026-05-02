@@ -111,3 +111,30 @@ export async function fetchGraphProperties(graph: Graph) {
 
   return data;
 }
+
+export async function fetchConnectedComponents(graph: Graph) {
+  const requestBody = toSimpleBackendGraph({
+    ...graph,
+    directed: false,
+  });
+
+  const response = await fetch(`${API_BASE_URL}/algorithms/connected-components`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Connected components error:", data);
+
+    throw new Error(
+      data?.message || "Impossible de vérifier la connexité du graphe"
+    );
+  }
+
+  return data;
+}
