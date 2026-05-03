@@ -5,7 +5,11 @@ Stratégie : extension progressive depuis un sommet de départ via un tas min.
 
 import heapq
 import time
-from typing import Any
+
+try:
+    from backend.algorithms.connected_components import connected_components as _check_connected
+except ModuleNotFoundError:
+    from algorithms.connected_components import connected_components as _check_connected
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -13,20 +17,12 @@ from typing import Any
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _build_step(
-    index: int,
-    title: str,
-    description: str,
-    highlighted_nodes: list[str],
-    highlighted_edges: list[str],
-    visited_nodes: list[str],
-    selected_nodes: list[str],
-    selected_edges: list[str],
-    node_labels: dict[str, str],
-    edge_labels: dict[str, str],
-    node_colors: dict[str, str],
-    edge_colors: dict[str, str],
-    extra: dict[str, Any] | None = None,
-) -> dict:
+    index, title, description,
+    highlighted_nodes, highlighted_edges,
+    visited_nodes, selected_nodes, selected_edges,
+    node_labels, edge_labels, node_colors, edge_colors,
+    extra=None,
+):
     return {
         "index": index,
         "title": title,
@@ -46,12 +42,11 @@ def _build_step(
     }
 
 
-def _adjacency(nodes: list[dict], edges: list[dict]) -> dict[str, list[dict]]:
+def _adjacency(nodes, edges):
     """Construit la liste d'adjacence pour graphe non orienté."""
-    adj: dict[str, list[dict]] = {n["id"]: [] for n in nodes}
+    adj = {n["id"]: [] for n in nodes}
     for e in edges:
         adj[e["source"]].append(e)
-        # On ajoute aussi la direction inverse (graphe non orienté)
         reverse = dict(e)
         reverse["source"], reverse["target"] = e["target"], e["source"]
         adj[e["target"]].append(reverse)
@@ -62,7 +57,7 @@ def _adjacency(nodes: list[dict], edges: list[dict]) -> dict[str, list[dict]]:
 #  Validation
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _validate(graph: dict, params: dict) -> tuple[bool, str, dict | None]:
+def _validate(graph, params):
     nodes = graph.get("nodes", [])
     edges = graph.get("edges", [])
 
@@ -124,6 +119,25 @@ def _validate(graph: dict, params: dict) -> tuple[bool, str, dict | None]:
                 "details": {},
             }
 
+    # ── Vérification de la connexité via le module connected_components ──
+    # Un graphe à un seul sommet est connexe par définition.
+    if len(nodes) > 1:
+        cc_result, _ = _check_connected({"nodes": nodes, "edges": edges})
+        nb_components = cc_result["summary"]["count"]
+        if nb_components > 1:
+            return False, (
+                f"Le graphe n'est pas connexe ({nb_components} composantes connexes). "
+                "Prim nécessite un graphe connexe."
+            ), {
+                "code": "INVALID_GRAPH_FOR_ALGORITHM",
+                "type": "validation_error",
+                "field": "graph",
+                "details": {
+                    "algorithm_requires": "connected_graph",
+                    "connected_components_count": nb_components,
+                },
+            }
+
     return True, "", None
 
 
@@ -131,7 +145,7 @@ def _validate(graph: dict, params: dict) -> tuple[bool, str, dict | None]:
 #  Algorithme principal
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run_prim(graph: dict, params: dict) -> dict:
+def run_prim(graph, params):
     """
     Exécute Prim et retourne la réponse au format contrat GraphLab.
 
@@ -154,40 +168,37 @@ def run_prim(graph: dict, params: dict) -> dict:
             "error": err_detail,
         }
 
-    nodes: list[dict] = graph["nodes"]
-    edges: list[dict] = graph["edges"]
+    nodes  = graph["nodes"]
+    edges  = graph["edges"]
     node_ids = [n["id"] for n in nodes]
 
     # Sommet de départ
-    start_node: str = params.get("start_node") or node_ids[0]
+    start_node = params.get("start_node") or node_ids[0]
 
     adj = _adjacency(nodes, edges)
 
     # ── Structures de suivi ──
-    in_mst: set[str] = set()
-    mst_edges: list[dict] = []          # arêtes originales acceptées
-    mst_edge_ids: list[str] = []
-    steps: list[dict] = []
-    step_idx = 0
-    warnings: list[str] = []
+    in_mst       = set()
+    mst_edges    = []        # arêtes originales acceptées
+    mst_edge_ids = []
+    steps        = []
+    step_idx     = 0
+    warnings     = []
 
-    # Edge lookup par id original
-    edge_by_id: dict[str, dict] = {e["id"]: e for e in edges}
+    edge_by_id = {e["id"]: e for e in edges}
 
     # ── Tas min : (poids, edge_id, source, target) ──
-    # On stocke l'id original de l'arête pour récupérer les infos complètes.
-    heap: list[tuple[float, str, str, str]] = []
+    heap = []
 
-    def push_neighbors(node: str):
+    def push_neighbors(node):
         for e in adj[node]:
             if e["target"] not in in_mst:
                 heapq.heappush(heap, (e["weight"], e["id"], e["source"], e["target"]))
 
-    # ── Labels utilitaires ──
-    def node_label_map() -> dict[str, str]:
+    def node_label_map():
         return {n["id"]: n.get("label", n["id"]) for n in nodes}
 
-    def edge_label_map() -> dict[str, str]:
+    def edge_label_map():
         return {e["id"]: str(e["weight"]) for e in edges}
 
     # ── Étape 0 : initialisation ──
@@ -210,10 +221,7 @@ def run_prim(graph: dict, params: dict) -> dict:
         edge_labels=edge_label_map(),
         node_colors={start_node: "#4f46e5"},
         edge_colors={},
-        extra={
-            "start_node": start_node,
-            "heap_size": len(heap),
-        },
+        extra={"start_node": start_node, "heap_size": len(heap)},
     ))
     step_idx += 1
 
@@ -222,7 +230,7 @@ def run_prim(graph: dict, params: dict) -> dict:
         weight, eid, src, tgt = heapq.heappop(heap)
 
         if tgt in in_mst:
-            # Étape : arête ignorée (sommet déjà dans l'ACM)
+            # Arête ignorée : sommet déjà dans l'ACM
             steps.append(_build_step(
                 index=step_idx,
                 title=f"Arête {eid} ignorée",
@@ -244,11 +252,9 @@ def run_prim(graph: dict, params: dict) -> dict:
             step_idx += 1
             continue
 
-        # Accepter l'arête
-        # Retrouver l'arête originale (direction canonique dans la liste)
+        # Retrouver l'arête originale (direction canonique)
         original_edge = edge_by_id.get(eid)
         if original_edge is None:
-            # Direction inverse → chercher par (src,tgt) ou (tgt,src)
             for e in edges:
                 if (
                     (e["source"] == src and e["target"] == tgt) or
@@ -280,7 +286,7 @@ def run_prim(graph: dict, params: dict) -> dict:
             node_labels=node_label_map(),
             edge_labels=edge_label_map(),
             node_colors={n: "#4f46e5" for n in in_mst},
-            edge_colors={eid2: "#15803d" for eid2 in mst_edge_ids},
+            edge_colors={e_id: "#15803d" for e_id in mst_edge_ids},
             extra={
                 "accepted_edge": original_edge["id"],
                 "mst_cost_so_far": cost_so_far,
@@ -293,13 +299,7 @@ def run_prim(graph: dict, params: dict) -> dict:
         if len(mst_edges) == len(node_ids) - 1:
             break
 
-    # ── Vérification connexité ──
-    if len(mst_edges) < len(node_ids) - 1:
-        warnings.append(
-            "Le graphe n'est pas connexe : l'ACM est une forêt couvrante."
-        )
-
-    total_cost = sum(e["weight"] for e in mst_edges)
+    total_cost   = sum(e["weight"] for e in mst_edges)
     mst_node_ids = list(in_mst)
 
     # ── Étape finale ──
@@ -318,7 +318,7 @@ def run_prim(graph: dict, params: dict) -> dict:
         node_labels=node_label_map(),
         edge_labels=edge_label_map(),
         node_colors={n: "#15803d" for n in mst_node_ids},
-        edge_colors={eid2: "#15803d" for eid2 in mst_edge_ids},
+        edge_colors={e_id: "#15803d" for e_id in mst_edge_ids},
         extra={"total_cost": total_cost},
     ))
 
@@ -352,7 +352,7 @@ def run_prim(graph: dict, params: dict) -> dict:
                 "highlighted_nodes": mst_node_ids,
                 "highlighted_edges": mst_edge_ids,
                 "node_colors": {n: "#15803d" for n in mst_node_ids},
-                "edge_colors": {eid2: "#15803d" for eid2 in mst_edge_ids},
+                "edge_colors": {e_id: "#15803d" for e_id in mst_edge_ids},
                 "node_labels": {},
                 "edge_labels": {e["id"]: str(e["weight"]) for e in mst_edges},
             },

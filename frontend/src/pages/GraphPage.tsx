@@ -82,7 +82,7 @@ function GraphPage() {
     </header>
 
 
-      <div className="app-layout">
+      {/* <div className="app-layout">
         <div className="left-panel">
           <FormuleGraphe onGrapheCreé={setGraph} />
         </div>
@@ -97,7 +97,28 @@ function GraphPage() {
             <PannelConfigGraphe graph={graph} />
           </div>
         </div>
-      </div>
+      </div> */}
+
+      <div className="app-layout">
+  <div className="left-panel">
+    <FormuleGraphe onGrapheCreé={setGraph} />
+
+    <div className="left-stats">
+      <PannelConfigGraphe graph={graph} mode="stats" />
+    </div>
+  </div>
+
+  <div className="right-panel">
+    <VisualisationGraphe
+      graph={graph}
+      onGraphChange={setGraph}
+    />
+
+    <div className="analysis-container">
+      <PannelConfigGraphe graph={graph} mode="analysis" />
+    </div>
+  </div>
+</div>
     </div>
   );
 }
