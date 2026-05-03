@@ -9,7 +9,9 @@ interface PropsPannelConfigGraphe {
 }
 
 export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph, mode = 'analysis' }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
 
   const [statistiques, setStatistiques] = useState({
