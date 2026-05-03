@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide de Test — Algorithmes de Graphes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: #ddd9d0;
+    --border-strong: #c5bfb4;
+    --accent1: #1a6db5;   /* bleu clair */
+    --accent2: #c9520a;   /* orange */
+    --accent3: #3a8c3f;   /* vert */
+    --accent4: #7b3fa0;   /* violet */
+    --accent5: #b08800;   /* doré */
+    --text: #1c1a18;
+    --text-secondary: #4a4640;
+    --muted: #8a857e;
+    --danger: #c0392b;
+    --success: #2a7a30;
+    --success-bg: #edf7ee;
+    --warn-bg: #fdf8e8;
+    --warn-border: #c9a800;
+    --code-bg: #f0eeea;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Subtle grid pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(26,109,181,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,109,181,0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1060px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    padding: 52px 0 36px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent1);
+    background: rgba(26,109,181,0.08);
+    border: 1px solid rgba(26,109,181,0.25);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+
+  header h1 {
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  header h1 span { color: var(--accent1); }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── STATS ───────────────────────────────── */
+  .stat-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 36px 0;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    flex: 1;
+    min-width: 120px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── TOC ─────────────────────────────────── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 0 0 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .toc-title {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .toc a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    transition: color 0.15s;
+  }
+
+  .toc a:hover { color: var(--accent1); }
+  .toc a .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── ALGO SECTION ────────────────────────── */
+  .algo-section {
+    margin: 56px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .algo-section-header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid var(--border);
+    border-left: 4px solid;
+  }
+
+  .algo-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .algo-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding-top: 6px;
+    min-width: 28px;
+  }
+
+  .algo-title { font-size: clamp(1.25rem, 2.5vw, 1.7rem); font-weight: 700; }
+
+  /* ── EXPLANATION ──────────────────────────── */
+  .explanation {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 32px;
+  }
+
+  .explanation h3 {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  .explanation p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+  }
+
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation strong { color: var(--text); }
+  .explanation em { font-style: italic; }
+
+  .steps-list {
+    list-style: none;
+    counter-reset: step-counter;
+    margin: 10px 0;
+  }
+
+  .steps-list li {
+    counter-increment: step-counter;
+    padding: 7px 0 7px 36px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .steps-list li:last-child { border-bottom: none; }
+
+  .steps-list li::before {
+    content: counter(step-counter, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent1);
+    top: 9px;
+  }
+
+  .complexity-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .complexity-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+    background: var(--surface);
+  }
+
+  /* ── SECTION CONTENT AREA ─────────────────── */
+  .section-content {
+    padding: 24px 32px 28px;
+  }
+
+  /* ── SECTION LABEL ────────────────────────── */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label:first-child { margin-top: 0; }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TEST CARDS ───────────────────────────── */
+  .test-grid {
+    display: grid;
+    gap: 10px;
+  }
+
+  .test-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .test-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
+  .test-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .test-card-header:hover { background: var(--surface2); }
+  .test-card-header.open { border-bottom-color: var(--border); }
+
+  .test-type-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .badge-normal  { background: #edf7ee; color: #2a7a30; border: 1px solid #b8e2bb; }
+  .badge-extreme { background: #fbeaea; color: #b52b2b; border: 1px solid #f0b8b8; }
+  .badge-nosol   { background: #fff0e8; color: #b84a10; border: 1px solid #f4c4a0; }
+  .badge-tricky  { background: #f4eef9; color: #6b2f93; border: 1px solid #d4b8ea; }
+  .badge-limit   { background: #fdf8e4; color: #8a6500; border: 1px solid #e8d888; }
+
+  .test-card-title { font-weight: 600; font-size: 0.9rem; flex: 1; color: var(--text); }
+
+  .test-card-body { padding: 16px; display: none; background: var(--bg); }
+  .test-card-body.open { display: block; }
+
+  /* ── GRAPH DEF ────────────────────────────── */
+  .graph-def {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .graph-def .comment { color: var(--muted); }
+  .graph-def .keyword { color: var(--accent1); font-weight: 500; }
+  .graph-def .value   { color: var(--accent3); }
+  .graph-def .label   { color: var(--accent4); }
+  .graph-def .edge    { color: var(--text); }
+
+  /* ── EXPECTED / PITFALL ───────────────────── */
+  .expected {
+    background: var(--success-bg);
+    border-left: 3px solid var(--success);
+    padding: 11px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 10px;
+  }
+
+  .expected-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--success);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 5px;
+  }
+
+  .expected p { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.6; }
+  .expected strong { color: var(--text); }
+  .expected em { font-style: italic; }
+
+  .pitfall {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-border);
+    padding: 11px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 10px;
+  }
+
+  .pitfall-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--warn-border);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 5px;
+  }
+
+  .pitfall p { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── CHEVRON ──────────────────────────────── */
+  .chevron {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 9px;
+    transition: transform 0.2s, border-color 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .test-card-header.open .chevron {
+    transform: rotate(180deg);
+    border-color: var(--accent1);
+    color: var(--accent1);
+  }
+
+  /* ── FOOTER ───────────────────────────────── */
+  footer {
+    margin: 64px 0 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">Mini-Projet Graphes · Rôle : Testeur</div>
+    <h1>Guide Complet<br><span>Algorithmes de Graphes</span></h1>
+    <p>// Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson</p>
+  </header>
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent1)">5</div>
+      <div class="stat-label">Algorithmes</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent3)">32</div>
+      <div class="stat-label">Cas de test</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent2)">5</div>
+      <div class="stat-label">Catégories</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent4)">∞</div>
+      <div class="stat-label">Cas délicats</div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">// Sommaire</div>
+    <a href="#prim"><span class="dot" style="background:var(--accent1)"></span>01 — Prim</a>
+    <a href="#kruskal"><span class="dot" style="background:var(--accent2)"></span>02 — Kruskal</a>
+    <a href="#euler"><span class="dot" style="background:var(--accent3)"></span>03 — Euler</a>
+    <a href="#welsh"><span class="dot" style="background:var(--accent4)"></span>04 — Welsh-Powell</a>
+    <a href="#ford"><span class="dot" style="background:var(--accent5)"></span>05 — Ford-Fulkerson</a>
+  </div>
+
+  <!-- ============================
+       ALGO 1 : PRIM
+  ============================= -->
+  <div class="algo-section" id="prim">
+    <div class="algo-section-header" style="border-left-color:var(--accent1)">
+      <div class="algo-header">
+        <div class="algo-num">01</div>
+        <div class="algo-title" style="color:var(--accent1)">Algorithme de Prim</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> Trouver l'Arbre Couvrant Minimum (ACM) d'un graphe connexe non orienté pondéré — connecter tous les sommets avec le poids total minimum, sans cycle.</p>
+      <p><strong>Idée centrale :</strong> Prim construit l'arbre <em>sommet par sommet</em>. À chaque étape, il choisit l'arête de poids minimum reliant un sommet déjà dans l'arbre à un sommet extérieur.</p>
+      <ol class="steps-list">
+        <li>Choisir un sommet de départ arbitraire, le marquer comme "visité".</li>
+        <li>Ajouter toutes les arêtes de ce sommet dans une file de priorité (min-heap).</li>
+        <li>Extraire l'arête de poids minimum. Si le sommet destination est déjà visité → ignorer.</li>
+        <li>Sinon, ajouter ce sommet à l'arbre, ajouter ses arêtes voisines dans la file.</li>
+        <li>Répéter jusqu'à ce que tous les sommets soient dans l'arbre (n-1 arêtes).</li>
+      </ol>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent1);border-color:rgba(26,109,181,0.4)">O((V+E) log V) avec min-heap</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Non orienté · Pondéré</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Condition : connexe</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe simple connexe (5 sommets)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,2
+A,C,3
+B,C,1
+B,D,4
+C,D,5
+C,E,6
+D,E,2</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : B—C(1), A—B(2), D—E(2), B—D(4) → Poids total = <strong>9</strong>. n-1 = 4 arêtes pour 5 sommets ✓</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Ce qu'il faut vérifier</div>
+              <p>L'algorithme peut démarrer de n'importe quel sommet et doit toujours donner le même poids total (même si les arêtes peuvent varier en cas d'égalité).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe complet K4</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+1,2,10
+1,3,6
+1,4,5
+2,3,4
+2,4,7
+3,4,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : 3—4(3), 2—3(4), 1—4(5) → Poids total = <strong>12</strong>. 3 arêtes pour 4 sommets ✓</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Extrêmes</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe à 1 sommet (aucune arête)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Sommets :</span> <span class="value">A</span>
+<span class="keyword">Arêtes   :</span> <span class="value">aucune</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM = {A} seul. Poids = 0. 0 arêtes. Pas de boucle infinie ni de crash.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège classique</div>
+              <p>Certaines implémentations plantent ou retournent null sur un graphe à 1 sommet.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe à 2 sommets, 1 arête</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,7</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM = {A—B(7)}. Poids = 7. L'unique arête est forcément dans l'ACM.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Arêtes avec poids négatifs</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,-5
+B,C,3
+A,C,2</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : A—B(-5), A—C(2) → Poids = <strong>-3</strong>. Prim fonctionne avec des poids négatifs (contrairement à Dijkstra).</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège</div>
+              <p>Vérifier que le comparateur du min-heap gère correctement les valeurs négatives.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Toutes les arêtes de même poids</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,D,1
+A,C,1
+B,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Plusieurs ACM valides possibles, tous de poids = 3. Le programme doit en retourner un valide (3 arêtes, tous sommets connectés, sans cycle).</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Sans Solution</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Graphe non connexe (2 composantes)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,3
+C,D,5
+<span class="comment">// A—B et C—D sont des composantes séparées</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Aucun ACM global possible. Message clair : <em>"Le graphe n'est pas connexe. ACM impossible."</em></p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Détection</div>
+              <p>Après l'exécution, si le nombre d'arêtes dans l'ACM &lt; n-1, le graphe n'est pas connexe.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Graphe vide (0 sommets)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Sommets :</span> <span class="value">∅</span>
+<span class="keyword">Arêtes   :</span> <span class="value">∅</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Pas de crash. Retourner un message d'erreur ou un ACM vide selon la spécification.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Plusieurs arêtes de même poids minimal (égalité)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,2
+A,C,2
+B,D,3
+C,D,3
+B,C,10</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Plusieurs ACM optimaux (poids = 7). Vérifier que le résultat est un arbre valide (connexe, sans cycle, n-1 arêtes) quel que soit le choix en cas d'égalité.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Graphe déjà un arbre (chemin linéaire)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,4
+C,D,2</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>L'ACM = le graphe lui-même. Poids = 7. Toutes les arêtes sont incluses (aucun cycle à éliminer).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Arêtes parallèles (multi-graphe)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,5
+A,B,3
+B,C,2</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Garder uniquement A—B de poids 3. ACM = {A—B(3), B—C(2)}, poids = 5.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège</div>
+              <p>Les arêtes dupliquées peuvent causer des erreurs ou des ACM incorrects selon la structure de données.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 2 : KRUSKAL
+  ============================= -->
+  <div class="algo-section" id="kruskal">
+    <div class="algo-section-header" style="border-left-color:var(--accent2)">
+      <div class="algo-header">
+        <div class="algo-num">02</div>
+        <div class="algo-title" style="color:var(--accent2)">Algorithme de Kruskal</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> Même objectif que Prim — trouver l'ACM — mais approche radicalement différente.</p>
+      <p><strong>Idée centrale :</strong> Kruskal construit l'arbre <em>arête par arête</em>. Il trie toutes les arêtes par poids croissant et les ajoute une par une, en rejetant celles qui créeraient un cycle. Utilise la structure <em>Union-Find (DSU)</em> pour détecter les cycles en O(α(n)).</p>
+      <ol class="steps-list">
+        <li>Trier toutes les arêtes par poids croissant.</li>
+        <li>Initialiser n composantes connexes (chaque sommet est sa propre composante).</li>
+        <li>Pour chaque arête (u,v) dans l'ordre : si u et v sont dans des composantes différentes → ajouter à l'ACM et fusionner (Union).</li>
+        <li>Si u et v sont dans la même composante → ignorer (créerait un cycle).</li>
+        <li>S'arrêter quand l'ACM contient n-1 arêtes.</li>
+      </ol>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent2);border-color:rgba(201,82,10,0.4)">O(E log E) — dominé par le tri</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Non orienté · Pondéré</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Meilleur sur graphes épars</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe classique (même que Prim — vérification croisée)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes (triées) :</span>
+B,C,1
+A,B,2
+D,E,2
+A,C,3
+B,D,4
+C,D,5
+C,E,6</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : {B—C(1), A—B(2), D—E(2), B—D(4)} → Poids = <strong>9</strong>. Même résultat que Prim ✓</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Test de cohérence</div>
+              <p>Comparer le résultat de Prim et Kruskal sur le même graphe : les poids totaux doivent être identiques.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Graphe circulaire C5 (rejeter l'arête la plus lourde du cycle)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,5
+B,C,3
+C,D,2
+D,E,6
+E,A,4</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : {C—D(2), B—C(3), E—A(4), A—B(5)} → exclure D—E(6). Poids = <strong>14</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Graphe complet K5 (beaucoup d'arêtes inutiles)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,10
+A,C,8
+A,D,6
+A,E,4
+B,C,7
+B,D,5
+B,E,3
+C,D,9
+C,E,2
+D,E,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : {D—E(1), C—E(2), B—E(3), A—E(4)} → Poids = <strong>10</strong>. 6 arêtes rejetées.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Union-Find : étoile centrale (compression de chemin)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+B,C,1
+C,D,1
+D,E,1
+E,F,1
+A,B,1
+A,C,2
+A,D,3
+A,E,4
+A,F,5</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM = {B—C(1), C—D(1), D—E(1), E—F(1), A—B(1)} → Poids = <strong>5</strong>. Tester que find() avec compression de chemin ne cause pas d'erreurs.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Toutes les arêtes de poids égal (ACM non unique)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,5
+B,C,5
+C,D,5
+D,E,5
+A,C,10
+B,D,10
+C,E,10</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM avec 4 arêtes de poids 5 = <strong>20</strong>. Plusieurs solutions valides. L'ordre de tri interne détermine laquelle.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Extrêmes</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Poids très grands (risque d'overflow)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,2000000000
+B,C,1999999999
+A,C,1500000000</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM : {A—C, B—C} → Poids = 3 499 999 999. Utiliser long/int64 pour éviter l'overflow.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Sans Solution</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Graphe non connexe → forêt covrante</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,A,1
+D,E,1
+E,F,1
+F,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Forêt de 2 arbres : {A—B(1), B—C(1)} + {D—E(1), E—F(1)}. Message : <em>"Graphe non connexe — 2 composantes détectées. Forêt retournée."</em></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Graphe vide (0 sommets)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Sommets :</span> <span class="value">∅</span>
+<span class="keyword">Arêtes   :</span> <span class="value">∅</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>ACM vide. Message : <em>"Graphe vide — aucun arbre couvrant possible."</em> Pas d'erreur.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 3 : EULER
+  ============================= -->
+  <div class="algo-section" id="euler">
+    <div class="algo-section-header" style="border-left-color:var(--accent3)">
+      <div class="algo-header">
+        <div class="algo-num">03</div>
+        <div class="algo-title" style="color:var(--accent3)">Chemins & Circuits Eulériens</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Définitions :</strong><br>
+      — <em>Chemin eulérien :</em> passe par chaque arête <em>exactement une fois</em> (sans nécessairement revenir au départ).<br>
+      — <em>Circuit eulérien :</em> chemin eulérien qui revient au sommet de départ.</p>
+      <p><strong>Conditions (graphe non orienté) :</strong></p>
+      <ol class="steps-list">
+        <li><strong>Circuit eulérien :</strong> graphe connexe + tous les sommets ont un degré pair.</li>
+        <li><strong>Chemin eulérien :</strong> graphe connexe + exactement 2 sommets ont un degré impair (départ et arrivée).</li>
+      </ol>
+      <p><strong>Pour graphe orienté :</strong> Circuit : in-deg = out-deg pour tout sommet. Chemin : un sommet a out-deg − in-deg = 1 (départ), un a in-deg − out-deg = 1 (arrivée).</p>
+      <p><strong>Algorithme de Hierholzer :</strong> partir d'un sommet, suivre les arêtes jusqu'à revenir au départ, puis insérer les sous-circuits non traités. Complexité O(V + E).</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent3);border-color:rgba(58,140,63,0.4)">O(V + E)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Orienté ou Non orienté</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Circuit eulérien classique (tous degrés pairs)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,A,1
+A,D,1
+D,B,1
+B,A,1
+<span class="comment">// Degrés : A=4, B=4, C=2, D=2 → tous pairs ✓</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Circuit eulérien valide, ex : A→B→C→A→D→B→A. Toutes les 6 arêtes parcourues exactement une fois, retour au départ ✓</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Chemin eulérien (exactement 2 sommets de degré impair)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+A,C,1
+B,C,1
+B,D,1
+C,E,1
+D,E,1
+<span class="comment">// Degrés : A=2, B=3, C=3, D=2, E=2
+// B et C ont degré impair → chemin de B à C</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Chemin eulérien de B à C (ou C à B). Ex : B→A→C→B→D→E→C. 6 arêtes parcourues, début ≠ fin.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Circuit eulérien orienté (in-deg = out-deg)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs (orientés) :</span>
+A,B,1
+B,C,1
+C,A,1
+<span class="comment">// in-deg = out-deg = 1 pour tous → circuit eulérien orienté</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Circuit eulérien orienté : A→B→C→A. Les conditions pour graphe orienté diffèrent du non orienté.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Sans Solution</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Plus de 2 sommets de degré impair (Königsberg)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+A,B,1
+A,C,1
+A,C,1
+A,D,1
+B,D,1
+C,D,1
+<span class="comment">// Degrés : A=5, B=3, C=3, D=3 → 4 sommets impairs</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Ni chemin ni circuit eulérien. Message : <em>"Aucun chemin/circuit eulérien. 4 sommets ont un degré impair (≠ 0 ou 2)."</em></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Graphe non connexe avec degrés pairs</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,A,1
+D,E,1
+E,F,1
+F,D,1
+<span class="comment">// Tous degrés pairs MAIS graphe non connexe</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Pas de circuit eulérien malgré les degrés pairs. La connexité doit être vérifiée AVANT les conditions de degré.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège fréquent</div>
+              <p>Vérifier uniquement les degrés sans tester la connexité est une erreur classique — un programme naïf retournerait un faux positif.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Extrêmes & Délicats</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe à 1 seule arête</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+<span class="comment">// Degrés : A=1, B=1 → 2 sommets impairs</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Chemin eulérien : A→B. Pas de circuit. 1 arête parcourue.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Sommet isolé dans un graphe eulérien</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,A,1
+<span class="comment">// D est déclaré mais isolé (degré 0)</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Selon la définition : le graphe restreint aux arêtes est connexe et eulérien. Si D est inclus dans le graphe global → non connexe. Définir le comportement attendu avec l'équipe.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Définition à clarifier</div>
+              <p>Certaines implémentations ignorent les sommets de degré 0 pour tester la connexité — d'autres non.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 4 : WELSH-POWELL
+  ============================= -->
+  <div class="algo-section" id="welsh">
+    <div class="algo-section-header" style="border-left-color:var(--accent4)">
+      <div class="algo-header">
+        <div class="algo-num">04</div>
+        <div class="algo-title" style="color:var(--accent4)">Coloration Welsh-Powell</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> Colorer les sommets avec le minimum de couleurs de sorte que deux sommets adjacents n'aient jamais la même couleur. Welsh-Powell est un algorithme glouton (heuristique), pas forcément optimal.</p>
+      <ol class="steps-list">
+        <li>Calculer le degré de chaque sommet.</li>
+        <li>Trier les sommets par degré décroissant.</li>
+        <li>Prendre la première couleur. Parcourir la liste triée : attribuer cette couleur à tous les sommets non adjacents à un sommet déjà coloré avec cette couleur.</li>
+        <li>Passer à la couleur suivante. Répéter pour les sommets non encore colorés.</li>
+        <li>S'arrêter quand tous les sommets sont colorés.</li>
+      </ol>
+      <p><strong>Note :</strong> Welsh-Powell ne garantit pas le nombre chromatique χ(G) optimal, mais donne une bonne approximation en O(V² + E).</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent4);border-color:rgba(123,63,160,0.4)">O(V² + E)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Non orienté</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Heuristique (non optimal garanti)</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe biparti K(3,3) — 2 couleurs suffisent</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,D,1
+A,E,1
+A,F,1
+B,D,1
+B,E,1
+B,F,1
+C,D,1
+C,E,1
+C,F,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ(G) = 2. Welsh-Powell doit trouver 2 couleurs : {A,B,C} = Couleur1, {D,E,F} = Couleur2.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Cycle pair C6 — 2 couleurs</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+1,2,1
+2,3,1
+3,4,1
+4,5,1
+5,6,1
+6,1,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ(C6) = 2. Coloration : {1,3,5} = Rouge, {2,4,6} = Bleu.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Extrêmes</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe complet K5 — 5 couleurs obligatoires</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+A,C,1
+A,D,1
+A,E,1
+B,C,1
+B,D,1
+B,E,1
+C,D,1
+C,E,1
+D,E,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ(K5) = 5. Chaque sommet a une couleur différente. Welsh-Powell est optimal ici (pas d'autre solution).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe sans arête — 1 couleur</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Sommets :</span> <span class="value">A, B, C, D, E</span>
+<span class="keyword">Arêtes :</span> <span class="value">aucune</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ = 1. Une seule couleur pour tous les sommets (aucun conflit possible).</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Cycle impair C5 — 3 couleurs minimum</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A,B,1
+B,C,1
+C,D,1
+D,E,1
+E,A,1
+<span class="comment">// Tous les degrés = 2 → ordre arbitraire</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ(C5) = 3. Exemple : A=1, B=2, C=1, D=2, E=3.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège</div>
+              <p>Tous les degrés sont identiques → l'ordre de tri n'est pas déterministe. Le résultat peut varier selon l'implémentation, mais doit toujours utiliser 3 couleurs.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Welsh-Powell non optimal (cas connu — heuristique)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+1,2,1
+1,3,1
+2,4,1
+2,5,1
+3,4,1
+3,6,1
+4,5,1
+4,6,1
+5,6,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>χ réel = 3. Welsh-Powell peut retourner 3 ou 4 couleurs selon l'ordre de tri. Ce n'est pas un bug — documenter ce comportement heuristique dans les tests.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 5 : FORD-FULKERSON
+  ============================= -->
+  <div class="algo-section" id="ford">
+    <div class="algo-section-header" style="border-left-color:var(--accent5)">
+      <div class="algo-header">
+        <div class="algo-num">05</div>
+        <div class="algo-title" style="color:var(--accent5)">Ford-Fulkerson — Flot Maximum</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> Trouver le flot maximum pouvant être envoyé d'une source S à un puits T dans un réseau orienté avec capacités.</p>
+      <p><strong>Idée centrale :</strong> Augmenter itérativement le flot via des <em>chemins augmentants</em> (S→T avec capacité résiduelle). Le graphe <em>résiduel</em> modélise les capacités restantes ET les flots inverses pour annuler de mauvais choix.</p>
+      <ol class="steps-list">
+        <li>Initialiser tous les flots à 0. Construire le graphe résiduel.</li>
+        <li>Trouver un chemin augmentant de S à T dans le graphe résiduel (BFS = Edmonds-Karp, ou DFS = Ford-Fulkerson classique).</li>
+        <li>Trouver le goulot d'étranglement (capacité minimale sur ce chemin).</li>
+        <li>Augmenter le flot sur ce chemin, mettre à jour le graphe résiduel (capacité directe −δ, capacité inverse +δ).</li>
+        <li>Répéter jusqu'à l'absence de chemin augmentant → flot maximum atteint.</li>
+      </ol>
+      <p><strong>Théorème Max-flow Min-cut :</strong> Flot maximum = Coupe minimale. Vérifier ce résultat pour valider l'implémentation.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent5);border-color:rgba(176,136,0,0.4)">O(E × |f*|) FF classique</span>
+        <span class="complexity-tag" style="color:var(--accent5);border-color:rgba(176,136,0,0.4)">O(VE²) Edmonds-Karp (BFS)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Orienté · Capacités</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Réseau simple 4 nœuds (2 chemins parallèles)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Source :</span> <span class="value">S</span>   <span class="keyword">Puits :</span> <span class="value">T</span>
+<span class="keyword">Arcs (capacités) :</span>
+S,A,10
+S,B,10
+A,T,10
+B,T,10
+A,B,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>20</strong>. S→A→T (flot 10) + S→B→T (flot 10). L'arc A→B(cap 1) est inutilisé.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Réseau avec goulot d'étranglement central</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,15
+S,B,4
+A,C,12
+B,C,10
+C,T,7
+A,T,5</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>12</strong>. Vérification coupe min : {C→T + A→T} = 7+5 = 12 ✓</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Sans Solution / Flot = 0</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Aucun chemin de S à T</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,10
+B,T,10
+<span class="comment">// A et B ne sont pas connectés</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = 0. Message : <em>"Aucun chemin de S à T. Flot = 0."</em> Pas de crash.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Capacités toutes à 0</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,0
+A,T,0</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = 0. Les arcs existent mais ne peuvent transporter aucun flot.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Arcs inverses cruciaux (graphe résiduel)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,5
+S,B,5
+A,B,3
+A,T,4
+B,T,4
+<span class="comment">// Si DFS choisit S→A→B→T d'abord (flot 3),
+// l'arc résiduel B→A doit permettre d'annuler ce choix</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>8</strong>. Chemins optimaux : S→A→T(4) + S→B→T(4).</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Point critique</div>
+              <p>Sans capacités inverses correctes, l'algorithme peut rester bloqué à flot = 7. Vérifier que le graphe résiduel est mis à jour après chaque augmentation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Flots inverses — annuler un mauvais choix initial</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,3
+S,B,3
+A,B,3
+A,T,2
+B,T,3
+<span class="comment">// Si DFS choisit S→A→B→T (flot 3),
+// il doit ensuite utiliser l'arc résiduel B→A</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>5</strong>. Chemins optimaux : S→A→T(2) + S→B→T(3).</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Piège majeur</div>
+              <p>Sans les arcs inverses dans le graphe résiduel, FF reste bloqué à une solution sous-optimale. C'est LE bug le plus fréquent dans les implémentations de Ford-Fulkerson.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Arcs antiparallèles (A→B et B→A simultanément)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,10
+A,T,10
+A,B,5
+B,A,5
+B,T,5
+S,B,5</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>15</strong>. Les arcs antiparallèles peuvent confondre le graphe résiduel si mal implémenté.</p>
+            </div>
+            <div class="pitfall">
+              <div class="pitfall-title">⚠ Implémentation</div>
+              <p>Avec une matrice d'adjacence, A→B et B→A s'interfèrent. Il faut une liste d'adjacence avec indices d'arcs pour gérer correctement ce cas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Chemins multiples (de nombreuses routes S→T)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,10
+S,B,10
+S,C,10
+A,D,5
+B,D,5
+C,D,5
+A,E,5
+B,E,5
+C,E,5
+D,T,10
+E,T,10</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>25</strong>. Coupe min : {S→A, S→B, S→C} = 10+10+10 = 25 ✓</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Source = Puits (S = T)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Source :</span> <span class="value">A</span>   <span class="keyword">Puits :</span> <span class="value">A</span>   <span class="comment">← même nœud !</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Comportement à définir : flot = 0 ou message d'erreur. Ne pas boucler infiniment. Ajouter une vérification S ≠ T en entrée.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-label">Cas Extrêmes</div>
+      <div class="test-grid">
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Graphe pathologique pour DFS (2000 itérations)</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,1000
+S,B,1000
+A,B,1
+A,T,1000
+B,T,1000
+<span class="comment">// DFS peut alterner S→A→B→T et S→B→A→T
+// → 2000 itérations au lieu de 2 avec BFS</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Flot max = <strong>2000</strong>. DFS : lent (2000 itérations). BFS (Edmonds-Karp) : 2 itérations. Documenter la différence de performance.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>// Guide de Test — Mini-Projet Graphes · Rôle Testeur</p>
+    <p>Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson</p>
+  </footer>
+
+</div>
+
+<script>
+  function toggle(header) {
+    const body = header.nextElementSibling;
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+  }
+
+  // Ouvrir la première carte de chaque section par défaut
+  document.querySelectorAll('.algo-section').forEach(section => {
+    const first = section.querySelector('.test-card-header');
+    if (first) {
+      first.classList.add('open');
+      first.nextElementSibling.classList.add('open');
+    }
+  });
+</script>
+</body>
+</html>
