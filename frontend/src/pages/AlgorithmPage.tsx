@@ -520,33 +520,27 @@ export default function AlgorithmPage() {
                 </>
               )}
 
-              {(selectedAlgorithm === "connected-components" ||
+             {(selectedAlgorithm === "connected-components" ||
                 selectedAlgorithm === "strongly-connected-components") && (
                 <>
-                  <div className="r-label">
-                    Nombre de composantes
-                  </div>
+                  <div className="r-label">Nombre de composantes</div>
 
                   <div className="final-big-value">
                     {String(summary.count ?? "—")}
                   </div>
 
-                  <div className="components-final-grid">
+                  <div className="components-simple">
                     {(details.components || []).map((component: string[], index: number) => (
-                      <div key={index} className="component-final-card">
-                        <div className="component-final-title">
+                      <div key={index} className="component-line">
+                        <span className="component-title">
                           {selectedAlgorithm === "connected-components"
-                            ? `Composante ${index + 1}`
-                            : `CFC ${index + 1}`}
-                        </div>
+                            ? `Composante ${index + 1} : `
+                            : `CFC ${index + 1} : `}
+                        </span>
 
-                        <div className="component-final-nodes">
-                          {component.map((node: string) => (
-                            <span key={node} className="component-final-node">
-                              {node}
-                            </span>
-                          ))}
-                        </div>
+                        <span className="component-nodes">
+                          {component.join(", ")}
+                        </span>
                       </div>
                     ))}
                   </div>
