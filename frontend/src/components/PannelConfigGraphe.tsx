@@ -1,68 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import type { Graph } from '../types/graph.types';
-import { fetchGraphProperties } from '../services/graphPropertiesApi';
-
 
 interface PropsPannelConfigGraphe {
   graph: Graph | null;
-  mode?: 'stats' | 'analysis';
 }
 
-export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph, mode = 'analysis' }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph }) => {
   const [statistiques, setStatistiques] = useState({
     sommets: 0,
     aretes: 0,
     connexe: false,
     cycles: 0,
     biparti: false,
-    arbre: false,
-    regulier: false,
-    eulerien: false,
   });
 
   useEffect(() => {
-    const analyserGraphe = async () => {
-      if (!graph) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await fetchGraphProperties(graph);
-
-        console.log("RÉPONSE PROPRIÉTÉS =", data);
-
-        const props = data.result;
-
-        setStatistiques({
-          sommets: props.nodes_count ?? 0,
-          aretes: props.edges_count ?? 0,
-          connexe: props.is_connected ?? false,
-          cycles: props.has_cycle ? 1 : 0,
-          biparti: props.is_bipartite ?? false,
-          arbre: props.is_tree ?? false,
-          regulier: props.is_regular ?? false,
-          eulerien: props.is_eulerian ?? false,
-        });
-
-      } catch (err) {
-        setError("Erreur lors de l’analyse du graphe");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    analyserGraphe();
+    if (graph) {
+      analyserGraphe();
+    }
   }, [graph]);
+
+  const analyserGraphe = () => {
+    if (!graph) return;
+
+    const sommets = graph.nodes.length;
+    const aretes = graph.edges.length;
+
+    setStatistiques({
+      sommets,
+      aretes,
+      connexe: true,
+      cycles: detecterCycles(),
+      biparti: false,
+    });
+  };
+
+  const detecterCycles = (): number => {
+    if (!graph) return 0;
+    return graph.edges.length - (graph.nodes.length - 1) > 0 ? 1 : 0;
+  };
 
   return (
     <>
-    {/* STATISTIQUES RAPIDES */}
-    {mode === "stats" && (
+      {/* STATISTIQUES RAPIDES */}
       <div className="card">
         <div className="card-title">Statistiques rapides</div>
         <div className="stats">
@@ -76,10 +56,6 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph, m
           </div>
         </div>
       </div>
-
-         )}
-      {mode === "analysis" && (
-      <>
 
       {/* PROPRIÉTÉS STRUCTURELLES */}
       <div className="card">
@@ -112,33 +88,28 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph, m
       <div className="card">
         <div className="card-title">Analyses complémentaires</div>
         <div className="side-list">
-          <div className={`si ${statistiques.biparti ? 'pass' : 'neutral'}`}>
+          <div className="si neutral">
             <span className="si-icon"></span>
             Biparti
-            <span className="si-val">{statistiques.biparti ? 'Oui' : 'Non'}</span>
+            <span className="si-val">Non</span>
           </div>
-
-          <div className={`si ${statistiques.arbre ? 'pass' : 'neutral'}`}>
+          <div className="si neutral">
             <span className="si-icon"></span>
             Arbre
-            <span className="si-val">{statistiques.arbre ? 'Oui' : 'Non'}</span>
+            <span className="si-val">Non</span>
           </div>
-
-          <div className={`si ${statistiques.regulier ? 'pass' : 'neutral'}`}>
+          <div className="si neutral">
             <span className="si-icon"></span>
             Régulier
-            <span className="si-val">{statistiques.regulier ? 'Oui' : 'Non'}</span>
+            <span className="si-val">Non</span>
           </div>
-
-          <div className={`si ${statistiques.eulerien ? 'pass' : 'neutral'}`}>
+          <div className="si neutral">
             <span className="si-icon"></span>
             Eulérien
-            <span className="si-val">{statistiques.eulerien ? 'Oui' : 'Non'}</span>
+            <span className="si-val">Non</span>
           </div>
         </div>
       </div>
-      </>
-       )}
     </>
   );
 };

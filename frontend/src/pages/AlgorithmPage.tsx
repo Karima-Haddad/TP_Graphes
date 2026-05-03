@@ -17,8 +17,6 @@ import { fetchConnectedComponents } from "../services/executionApi";
 import { useRef } from "react";
 import "../styles/algorithm-page.css";
 
-
-
 const fallbackGraph: Graph = {
   directed: false,
   weighted: true,
@@ -38,23 +36,7 @@ const fallbackGraph: Graph = {
   ],
 };
 
-function renderArray(value: unknown) {
-  if (!Array.isArray(value)) return "—";
-  return value.join(" → ");
-}
 
-function getEulerPath(summary: Record<string, unknown>, details: Record<string, unknown>) {
-  return (
-    details.path ||
-    details.euler_path ||
-    details.circuit ||
-    details.eulerian_path ||
-    summary.path ||
-    summary.euler_path ||
-    summary.circuit ||
-    []
-  );
-}
 
 
 export default function AlgorithmPage() {
@@ -302,9 +284,6 @@ export default function AlgorithmPage() {
         });
       }
     }, [executionResult]);
-
-
-    
     
   return (
       <div className="algorithm-page">
@@ -560,9 +539,7 @@ export default function AlgorithmPage() {
                   </div>
 
                   <div className="r-value">
-                    {renderArray(getEulerPath(summary, details)) !== "—"
-                      ? renderArray(getEulerPath(summary, details))
-                      : "Aucun chemin n'est trouvé"}
+                    {details.path?.join(" → ") || "Aucun chemin n'est trouvé"}
                   </div>
                 </>
               )}
