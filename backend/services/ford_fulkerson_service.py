@@ -60,9 +60,9 @@ def check_compatibility(graph):
     if graph.get("weighted", True):
         for edge in graph["edges"]:
             w = edge.get("weight")
-            if w is not None and w <= 0:
+            if w is not None and w < 0:
                 return False, (
-                    f"Toutes les capacités doivent être strictement positives. "
+                    f"Toutes les capacités doivent être positives. "
                     f"L'arête '{edge['id']}' a une capacité de {w}."
                 )
 
@@ -101,9 +101,45 @@ def run(graph, params):
             message=reason
         )
 
+    # ── AJOUT : vérification chemin structurel ──────────────────────────
+    from collections import deque
+
+    source = params.get("source")
+    target = params.get("target")
+
+    adj = {}
+    for e in graph["edges"]:
+        adj.setdefault(e["source"], set()).add(e["target"])
+
+    visited = {source}
+    queue = deque([source])
+    found = False
+    while queue:
+        u = queue.popleft()
+        for v in adj.get(u, []):
+            if v == target:
+                found = True
+                break
+            if v not in visited:
+                visited.add(v)
+                queue.append(v)
+        if found:
+            break
+
+    if not found:
+        return build_error_response(
+            algorithm="ford_fulkerson",
+            params=params,
+            code="NO_PATH",
+            message=(
+                f"Aucun chemin n'existe entre '{source}' et '{target}' "
+                f"dans le graphe. Vérifiez les arêtes et leur orientation."
+            )
+        )
+    # ───────────────────────────────────────────────────────────────────
+
     # Étape 3 : exécution
     return execute(graph, params)
-
 
 # ─────────────────────────────────────────────
 #  Utilitaire : générer un graphe exemple
