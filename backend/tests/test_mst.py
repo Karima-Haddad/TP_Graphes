@@ -96,7 +96,7 @@ def test_kruskal_single_node():
 
 
 def test_kruskal_disconnected_graph():
-    """Graphe non connexe → avertissement + forêt couvrante."""
+    """Graphe non connexe → avertissement + forêt couvrante (Kruskal l'accepte)."""
     g = {
         "directed": False, "weighted": True,
         "nodes": [
@@ -218,6 +218,10 @@ def test_prim_single_node():
 
 
 def test_prim_disconnected():
+    """
+    Graphe non connexe → Prim doit échouer avec success=False.
+    Prim, contrairement à Kruskal, exige un graphe connexe.
+    """
     g = {
         "directed": False, "weighted": True,
         "nodes": [{"id": "A"}, {"id": "B"}, {"id": "C"}, {"id": "D"}],
@@ -227,8 +231,10 @@ def test_prim_disconnected():
         ],
     }
     res = run_prim(g, {"start_node": "A"})
-    assert res["success"] is True
-    assert len(res["meta"]["warnings"]) > 0
+    assert res["success"] is False
+    assert res["error"]["code"] == "INVALID_GRAPH_FOR_ALGORITHM"
+    assert res["error"]["details"]["algorithm_requires"] == "connected_graph"
+    assert res["error"]["details"]["connected_components_count"] == 2
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -284,3 +290,18 @@ if __name__ == "__main__":
     print(f"  total_cost  : {r['result']['summary']['total_cost']}")
     print(f"  mst_edges   : {r['result']['details']['mst_edges']}")
     print(f"  step_count  : {r['meta']['step_count']}")
+
+    print("\n=== Prim — graphe non connexe ===")
+    g_disco = {
+        "directed": False, "weighted": True,
+        "nodes": [{"id": "A"}, {"id": "B"}, {"id": "C"}, {"id": "D"}],
+        "edges": [
+            {"id": "e1", "source": "A", "target": "B", "weight": 1},
+            {"id": "e2", "source": "C", "target": "D", "weight": 2},
+        ],
+    }
+    r = run_prim(g_disco, {"start_node": "A"})
+    print(f"  success     : {r['success']}")
+    print(f"  message     : {r['message']}")
+    print(f"  error.code  : {r['error']['code']}")
+    print(f"  components  : {r['error']['details']['connected_components_count']}")
