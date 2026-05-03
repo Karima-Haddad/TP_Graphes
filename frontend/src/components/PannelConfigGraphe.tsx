@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import type { Graph } from '../types/graph.types';
+import { fetchGraphProperties } from '../services/executionApi';
 
 interface PropsPannelConfigGraphe {
   graph: Graph | null;
+}
+
+interface GraphProperties {
+  is_bipartite: boolean;
+  is_tree: boolean;
+  is_regular: boolean;
+  is_eulerian: boolean;
 }
 
 export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph }) => {
@@ -14,9 +22,19 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
     biparti: false,
   });
 
+  const [graphProperties, setGraphProperties] = useState<GraphProperties>({
+    is_bipartite: false,
+    is_tree: false,
+    is_regular: false,
+    is_eulerian: false,
+  });
+
   useEffect(() => {
     if (graph) {
+      // eslint-disable-next-line react-hooks/immutability
       analyserGraphe();
+      // eslint-disable-next-line react-hooks/immutability
+      loadGraphProperties();
     }
   }, [graph]);
 
@@ -33,6 +51,22 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
       cycles: detecterCycles(),
       biparti: false,
     });
+  };
+
+  const loadGraphProperties = async () => {
+    if (!graph) return;
+
+    try {
+      const response = await fetchGraphProperties(graph);
+      setGraphProperties({
+        is_bipartite: response.result.is_bipartite,
+        is_tree: response.result.is_tree,
+        is_regular: response.result.is_regular,
+        is_eulerian: response.result.is_eulerian,
+      });
+    } catch (error) {
+      console.error('Erreur fetch graph properties:', error);
+    }
   };
 
   const detecterCycles = (): number => {
@@ -88,25 +122,33 @@ export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph })
       <div className="card">
         <div className="card-title">Analyses complémentaires</div>
         <div className="side-list">
-          <div className="si neutral">
+          <div className={`si ${graphProperties.is_bipartite ? 'pass' : 'warn'}`}>
             <span className="si-icon"></span>
             Biparti
-            <span className="si-val">Non</span>
+            <span className="si-val">
+              {graphProperties.is_bipartite ? 'Oui' : 'Non'}
+            </span>
           </div>
-          <div className="si neutral">
+          <div className={`si ${graphProperties.is_tree ? 'pass' : 'warn'}`}>
             <span className="si-icon"></span>
             Arbre
-            <span className="si-val">Non</span>
+            <span className="si-val">
+              {graphProperties.is_tree ? 'Oui' : 'Non'}
+            </span>
           </div>
-          <div className="si neutral">
+          <div className={`si ${graphProperties.is_regular ? 'pass' : 'warn'}`}>
             <span className="si-icon"></span>
             Régulier
-            <span className="si-val">Non</span>
+            <span className="si-val">
+              {graphProperties.is_regular ? 'Oui' : 'Non'}
+            </span>
           </div>
-          <div className="si neutral">
+          <div className={`si ${graphProperties.is_eulerian ? 'pass' : 'warn'}`}>
             <span className="si-icon"></span>
             Eulérien
-            <span className="si-val">Non</span>
+            <span className="si-val">
+              {graphProperties.is_eulerian ? 'Oui' : 'Non'}
+            </span>
           </div>
         </div>
       </div>
