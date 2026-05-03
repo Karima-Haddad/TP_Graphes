@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GraphLab — Contrat final des algorithmes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --bg2: #ffffff;
+      --bg3: #f9f8f6;
+      --bg4: #f0eee9;
+      --border: #e2ddd6;
+      --border2: #ccc7be;
+      --indigo: #3730a3;
+      --indigo2: #4f46e5;
+      --indigo-bg: #eef2ff;
+      --indigo-border: #c7d2fe;
+      --teal: #0d9488;
+      --teal-bg: #f0fdfa;
+      --teal-border: #99f6e4;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #be123c;
+      --red-bg: #fff1f2;
+      --red-border: #fecdd3;
+      --green: #15803d;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --blue-gray: #475569;
+      --blue-gray-bg: #f8fafc;
+      --blue-gray-border: #cbd5e1;
+      --text: #1c1917;
+      --text2: #57534e;
+      --text3: #a8a29e;
+      --shadow-sm: 0 1px 3px rgba(28,25,23,0.06), 0 1px 2px rgba(28,25,23,0.04);
+      --radius: 10px;
+      --radius-lg: 16px;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --serif: 'Fraunces', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: linear-gradient(180deg, #f7f5f2 0%, #f4f2ee 100%);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      min-height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; box-shadow: var(--shadow-sm);
+    }
+    .logo {
+      display:flex; align-items:center; gap:10px;
+      font-family: var(--serif); font-size:18px; font-weight:900;
+      letter-spacing:-0.02em;
+    }
+    .logo-mark {
+      width:34px; height:34px; border-radius:10px; background:var(--indigo);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .logo span { color: var(--indigo2); }
+    .topbar-nav { display:flex; gap:8px; flex-wrap: wrap; }
+    .nav-tab {
+      font-size:13px; font-weight:600; padding:8px 14px; border-radius:8px;
+      color:var(--text2); background: transparent; text-decoration: none;
+    }
+    .nav-tab.active, .nav-tab:hover { background: var(--indigo-bg); color: var(--indigo2); }
+
+    .app { display:flex; min-height:calc(100vh - 64px); max-width:1680px; margin:0 auto; }
+    .sidebar {
+      width: 300px; flex-shrink:0; background:rgba(255,255,255,0.86);
+      border-right:1px solid var(--border); padding:20px 12px; overflow-y:auto;
+      position: sticky; top: 64px; height: calc(100vh - 64px);
+    }
+    .sb-section {
+      font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--text3); padding:12px 10px 6px;
+    }
+    .sb-item {
+      display:block; padding:9px 10px;
+      border-radius:var(--radius); font-size:13px; font-weight:500; color:var(--text2);
+      border:1px solid transparent; margin-bottom:4px; text-decoration: none;
+    }
+    .sb-item:hover { background:var(--indigo-bg); color:var(--indigo2); border-color:var(--indigo-border); }
+
+    .main { flex:1; overflow-y:auto; padding:36px; }
+    .page-section { margin-bottom:64px; padding-bottom:48px; border-bottom:1px solid var(--border); }
+    .page-section:last-child { border-bottom:none; }
+    .page-header { margin-bottom:24px; }
+    .page-eyebrow {
+      font-family:var(--mono); font-size:11px; color:var(--indigo2);
+      letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;
+    }
+    .page-title {
+      font-family:var(--serif); font-size:30px; font-weight:900;
+      letter-spacing:-0.03em; margin-bottom:8px;
+    }
+    .page-desc { color:var(--text2); max-width:900px; line-height:1.8; }
+
+    .grid { display:grid; gap:20px; align-items:start; }
+    .grid-2 { grid-template-columns:1.15fr 1.85fr; }
+
+    .card {
+      background:rgba(255,255,255,0.96); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:22px 24px; box-shadow:var(--shadow-sm);
+    }
+    .card-title {
+      font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--text3); margin-bottom:18px; display:flex; align-items:center; gap:8px;
+    }
+    .card-title::after { content:''; flex:1; height:1px; background:var(--border); }
+    .algo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+    .algo-card {
+      background:rgba(255,255,255,0.96); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:22px 24px; box-shadow:var(--shadow-sm);
+    }
+    .algo-name { font-family:var(--serif); font-size:28px; font-weight:900; letter-spacing:-0.03em; color:var(--indigo2); margin-bottom:8px; }
+    .algo-desc { font-size:13px; color:var(--text2); line-height:1.7; margin-bottom:18px; }
+    .tag-row { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 16px; }
+    .tag { font-size:11px; font-weight:600; padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:var(--bg3); color:var(--text2); }
+    .tag.indigo { background:var(--indigo-bg); color:var(--indigo2); border-color:var(--indigo-border); }
+    .tag.green { background:var(--green-bg); color:var(--green); border-color:var(--green-border); }
+    .tag.amber { background:var(--amber-bg); color:var(--amber); border-color:var(--amber-border); }
+
+    .note {
+      padding:12px 14px; border-radius:12px; margin-bottom:14px;
+      border:1px solid var(--indigo-border); background:var(--indigo-bg); color:var(--indigo2);
+    }
+    .note.warn { border-color:var(--amber-border); background:var(--amber-bg); color:var(--amber); }
+    .note.success { border-color:var(--green-border); background:var(--green-bg); color:var(--green); }
+    .list { padding-left: 18px; color: var(--text2); }
+    .list li { margin: 6px 0; }
+    .subheading {
+      font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+      color:var(--text3); margin:18px 0 10px;
+    }
+    pre {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      overflow: auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .mini-table {
+      display:grid;
+      grid-template-columns: 190px 1fr;
+      gap:10px 16px;
+      margin-top:12px;
+    }
+    .mini-table .k {
+      color:var(--text3); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    }
+    .mini-table .v { color:var(--text2); }
+
+    @media (max-width: 1200px) {
+      .main { padding:24px; }
+      .grid-2, .algo-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 980px) {
+      .sidebar { display:none; }
+      .main { padding:20px; }
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+        <circle cx="3.5" cy="3.5" r="2.5" fill="white"/>
+        <circle cx="14.5" cy="3.5" r="2.5" fill="white"/>
+        <circle cx="9" cy="14.5" r="2.5" fill="white"/>
+        <line x1="5.8" y1="3.5" x2="12.2" y2="3.5" stroke="white" stroke-width="1.3"/>
+        <line x1="4.5" y1="5.5" x2="8" y2="12.5" stroke="white" stroke-width="1.3"/>
+        <line x1="13.5" y1="5.5" x2="10" y2="12.5" stroke="white" stroke-width="1.3"/>
+      </svg>
+    </div>
+    Graph<span>Lab</span>
+  </div>
+  <nav class="topbar-nav">
+    <a class="nav-tab active" href="#global">Contrat global</a>
+    <a class="nav-tab" href="#graph">Graphe</a>
+    <a class="nav-tab" href="#success">Succès</a>
+    <a class="nav-tab" href="#error">Erreur</a>
+    <a class="nav-tab" href="#algos">Algorithmes</a>
+  </nav>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-section">Base commune</div>
+    <a class="sb-item" href="#global">Contrat global d’exécution</a>
+    <a class="sb-item" href="#graph">Structure standard du graphe</a>
+    <a class="sb-item" href="#success">Contrat standard de succès</a>
+    <a class="sb-item" href="#steps">Format standard des étapes</a>
+    <a class="sb-item" href="#error">Contrat standard d’erreur</a>
+    <div class="sb-section">Algorithmes</div>
+    <a class="sb-item" href="#dijkstra">Dijkstra</a>
+    <a class="sb-item" href="#bellman-ford">Bellman-Ford</a>
+    <a class="sb-item" href="#bellman">Bellman</a>
+    <a class="sb-item" href="#prim">Prim</a>
+    <a class="sb-item" href="#kruskal">Kruskal</a>
+    <a class="sb-item" href="#cc">Composantes connexes</a>
+    <a class="sb-item" href="#cfc">Composantes fortement connexes</a>
+    <a class="sb-item" href="#euler">Euler</a>
+    <a class="sb-item" href="#welsh-powell">Welsh-Powell</a>
+    <div class="sb-section">Exemple</div>
+    <a class="sb-item" href="#example">Exemple complet Dijkstra</a>
+  </aside>
+
+  <main class="main">
+    <section class="page-section" id="global">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 01</div>
+        <h1 class="page-title">Contrat global d’exécution</h1>
+        <p class="page-desc">Ce contrat est la base commune pour toute l’équipe. Chaque exécution d’algorithme reçoit un nom d’algorithme, un graphe et des paramètres. La réponse renvoie ensuite le résultat logique, la visualisation finale et les étapes d’exécution.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Règle générale</div>
+          <div class="note success">Chaque algorithme doit suivre la même enveloppe JSON. Seuls <strong>params</strong>, <strong>result.summary</strong> et <strong>result.details</strong> changent selon l’algorithme.</div>
+          <ul class="list">
+            <li><strong>algorithm</strong> : nom technique de l’algorithme</li>
+            <li><strong>graph</strong> : structure du graphe d’entrée</li>
+            <li><strong>params</strong> : paramètres propres à l’algorithme</li>
+            <li><strong>result</strong> : réponse finale logique</li>
+            <li><strong>visualization.result_graph</strong> : état final à dessiner</li>
+            <li><strong>visualization.steps</strong> : étapes pour les boutons suivant / précédent / lecture / pause / stop</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Requête standard</div>
+<pre>{
+  "algorithm": "dijkstra",
+  "graph": {
+    "directed": false,
+    "weighted": true,
+    "nodes": [
+      { "id": "A", "label": "A", "x": 120, "y": 80 },
+      { "id": "B", "label": "B", "x": 290, "y": 130 },
+      { "id": "C", "label": "C", "x": 110, "y": 210 },
+      { "id": "D", "label": "D", "x": 320, "y": 240 },
+      { "id": "E", "label": "E", "x": 430, "y": 190 }
+    ],
+    "edges": [
+      { "id": "e1", "source": "A", "target": "B", "weight": 4 },
+      { "id": "e2", "source": "A", "target": "C", "weight": 2 },
+      { "id": "e3", "source": "B", "target": "D", "weight": 5 },
+      { "id": "e4", "source": "C", "target": "D", "weight": 1 },
+      { "id": "e5", "source": "D", "target": "E", "weight": 3 }
+    ]
+  },
+  "params": {
+    "source": "A",
+    "target": "E"
+  }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="graph">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 02</div>
+        <h1 class="page-title">Contrat standard de structure du graphe</h1>
+        <p class="page-desc">Ce contrat garantit que tous les algorithmes reçoivent le même format d’entrée, et que le frontend peut garder les mêmes positions visuelles entre le graphe initial, les étapes et le graphe résultat.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Structure complète</div>
+<pre>{
+  "directed": true,
+  "weighted": true,
+  "nodes": [
+    {
+      "id": "A",
+      "label": "A",
+      "x": 120,
+      "y": 80,
+      "data": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "A",
+      "target": "B",
+      "weight": 4,
+      "label": "4",
+      "data": {}
+    }
+  ]
+}</pre>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Règles de validation</div>
+          <div class="mini-table">
+            <div class="k">directed</div><div class="v">true = orienté, false = non orienté</div>
+            <div class="k">weighted</div><div class="v">true = pondéré, false = non pondéré</div>
+            <div class="k">node.id</div><div class="v">obligatoire et unique</div>
+            <div class="k">edge.id</div><div class="v">obligatoire et unique</div>
+            <div class="k">source / target</div><div class="v">doivent référencer des nœuds existants</div>
+            <div class="k">x / y</div><div class="v">fortement recommandés pour garder la stabilité visuelle</div>
+            <div class="k">weight</div><div class="v">requis si le graphe est pondéré, sinon facultatif</div>
+          </div>
+          <div class="note warn" style="margin-top:16px;">Pour un graphe non orienté, le backend et le frontend doivent considérer que <strong>(A,B)</strong> et <strong>(B,A)</strong> représentent la même connexion logique.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="success">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 03</div>
+        <h1 class="page-title">Contrat standard de succès</h1>
+        <p class="page-desc">Ce format s’applique quand l’algorithme s’exécute correctement. Il sépare la logique du résultat final et la partie visuelle nécessaire à l’affichage et à la lecture pas à pas.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Réponse standard de succès</div>
+<pre>{
+  "success": true,
+  "algorithm": "dijkstra",
+  "message": "Exécution réussie",
+  "params": {
+    "source": "A",
+    "target": "E"
+  },
+  "result": {
+    "summary": {},
+    "details": {}
+  },
+  "visualization": {
+    "result_graph": {
+      "highlighted_nodes": [],
+      "highlighted_edges": [],
+      "node_colors": {},
+      "edge_colors": {},
+      "node_labels": {},
+      "edge_labels": {}
+    },
+    "steps": []
+  },
+  "meta": {
+    "execution_time_ms": 12,
+    "step_count": 5,
+    "warnings": []
+  },
+  "error": null
+}</pre>
+      </div>
+    </section>
+
+    <section class="page-section" id="steps">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 04</div>
+        <h1 class="page-title">Format standard des étapes</h1>
+        <p class="page-desc">Les étapes sont utilisées uniquement pour l’interface d’exploration du processus. Elles permettent de piloter le graphe étape par étape avec les boutons précédent, suivant, lecture, pause et stop.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Objet étape</div>
+<pre>{
+  "index": 0,
+  "title": "Initialisation",
+  "description": "Distance(A)=0, les autres à infini",
+  "state": {
+    "highlighted_nodes": ["A"],
+    "highlighted_edges": [],
+    "visited_nodes": [],
+    "selected_nodes": [],
+    "selected_edges": [],
+    "node_labels": {
+      "A": "0",
+      "B": "∞"
+    },
+    "edge_labels": {},
+    "node_colors": {
+      "A": "#4f46e5"
+    },
+    "edge_colors": {},
+    "extra": {}
+  }
+}</pre>
+        </div>
+        <div class="card">
+          <div class="card-title">Signification des champs</div>
+          <ul class="list">
+            <li><strong>highlighted_nodes</strong> : nœuds mis en évidence à l’étape courante</li>
+            <li><strong>highlighted_edges</strong> : arêtes mises en évidence à l’étape courante</li>
+            <li><strong>visited_nodes</strong> : nœuds déjà visités</li>
+            <li><strong>selected_nodes</strong> : nœuds retenus dans le résultat courant</li>
+            <li><strong>selected_edges</strong> : arêtes retenues dans le résultat courant</li>
+            <li><strong>node_labels</strong> : distance, ordre, couleur, rang…</li>
+            <li><strong>edge_labels</strong> : capacité, poids modifié, flot…</li>
+            <li><strong>extra</strong> : informations spécifiques à l’algorithme</li>
+          </ul>
+          <div class="note">Le frontend lit <strong>visualization.steps[currentStep]</strong> et redessine le graphe avec son <strong>state</strong>.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="error">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 05</div>
+        <h1 class="page-title">Contrat standard d’erreur</h1>
+        <p class="page-desc">Ce format est renvoyé si le graphe est invalide, si les paramètres sont incorrects, ou si l’algorithme n’est pas applicable au graphe fourni.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Réponse standard d’erreur</div>
+<pre>{
+  "success": false,
+  "algorithm": "dijkstra",
+  "message": "Le graphe contient un poids négatif, incompatible avec Dijkstra",
+  "params": {
+    "source": "A",
+    "target": "E"
+  },
+  "result": null,
+  "visualization": null,
+  "meta": {
+    "execution_time_ms": 0,
+    "step_count": 0,
+    "warnings": []
+  },
+  "error": {
+    "code": "INVALID_GRAPH_FOR_ALGORITHM",
+    "type": "validation_error",
+    "field": "graph.edges[2].weight",
+    "details": {
+      "algorithm_requires": "positive_weights_only",
+      "received_weight": -3,
+      "edge_id": "e3"
+    }
+  }
+}</pre>
+        </div>
+        <div class="card">
+          <div class="card-title">Codes d’erreur recommandés</div>
+          <ul class="list">
+            <li>INVALID_GRAPH</li>
+            <li>INVALID_PARAMS</li>
+            <li>NODE_NOT_FOUND</li>
+            <li>EDGE_NOT_FOUND</li>
+            <li>INVALID_GRAPH_FOR_ALGORITHM</li>
+            <li>NEGATIVE_CYCLE_DETECTED</li>
+            <li>NO_EULERIAN_PATH</li>
+            <li>NO_SOLUTION</li>
+            <li>INTERNAL_ERROR</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="algos">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 06</div>
+        <h1 class="page-title">Contrats finaux par algorithme</h1>
+        <p class="page-desc">Chaque carte ci-dessous reprend uniquement ce qui change d’un algorithme à l’autre : les paramètres et le contenu de <strong>result</strong>. La structure extérieure reste toujours la même.</p>
+      </div>
+
+      <div class="algo-grid">
+        <div class="algo-card" id="dijkstra">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Dijkstra</div>
+          <p class="algo-desc">Plus court chemin pour graphe pondéré à poids positifs.</p>
+          <div class="tag-row">
+            <span class="tag indigo">Params requis</span>
+            <span class="tag green">Result graph</span>
+            <span class="tag amber">Steps utiles</span>
+          </div>
+          <div class="subheading">Params</div>
+<pre>{
+  "source": "A",
+  "target": "E"
+}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "path": ["A", "C", "D", "E"],
+    "distance": 6,
+    "visited_order": ["A", "C", "D", "B", "E"]
+  },
+  "details": {
+    "distances": {
+      "A": 0,
+      "B": 4,
+      "C": 2,
+      "D": 3,
+      "E": 6
+    },
+    "predecessors": {
+      "A": null,
+      "B": "A",
+      "C": "A",
+      "D": "C",
+      "E": "D"
+    }
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="bellman-ford">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Bellman-Ford</div>
+          <p class="algo-desc">Plus court chemin avec prise en charge des poids négatifs et détection de cycle négatif.</p>
+          <div class="subheading">Params</div>
+<pre>{
+  "source": "A",
+  "target": "E"
+}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "path": ["A", "C", "D", "E"],
+    "distance": 6,
+    "has_negative_cycle": false
+  },
+  "details": {
+    "distances": {
+      "A": 0,
+      "B": 4,
+      "C": 2,
+      "D": 3,
+      "E": 6
+    },
+    "predecessors": {
+      "A": null,
+      "B": "A",
+      "C": "A",
+      "D": "C",
+      "E": "D"
+    },
+    "negative_cycle": []
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="bellman">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Bellman</div>
+          <p class="algo-desc">Variante de plus court chemin selon votre implémentation de cours.</p>
+          <div class="subheading">Params</div>
+<pre>{
+  "source": "A",
+  "target": "E"
+}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "path": ["A", "C", "D", "E"],
+    "distance": 6
+  },
+  "details": {
+    "distances": {
+      "A": 0,
+      "B": 4,
+      "C": 2,
+      "D": 3,
+      "E": 6
+    },
+    "predecessors": {
+      "A": null,
+      "B": "A",
+      "C": "A",
+      "D": "C",
+      "E": "D"
+    }
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="prim">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Prim</div>
+          <p class="algo-desc">Arbre couvrant minimal par extension progressive depuis un sommet de départ.</p>
+          <div class="subheading">Params</div>
+<pre>{
+  "start_node": "A"
+}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "total_cost": 10
+  },
+  "details": {
+    "mst_edges": ["e2", "e4", "e5", "e1"],
+    "mst_nodes": ["A", "B", "C", "D", "E"],
+    "edge_list": [
+      { "id": "e2", "source": "A", "target": "C", "weight": 2 },
+      { "id": "e4", "source": "C", "target": "D", "weight": 1 },
+      { "id": "e5", "source": "D", "target": "E", "weight": 3 },
+      { "id": "e1", "source": "A", "target": "B", "weight": 4 }
+    ]
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="kruskal">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Kruskal</div>
+          <p class="algo-desc">Arbre couvrant minimal par tri des arêtes et évitement des cycles.</p>
+          <div class="subheading">Params</div>
+<pre>{}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "total_cost": 10
+  },
+  "details": {
+    "mst_edges": ["e4", "e2", "e5", "e1"],
+    "mst_nodes": ["A", "B", "C", "D", "E"],
+    "edge_list": [
+      { "id": "e4", "source": "C", "target": "D", "weight": 1 },
+      { "id": "e2", "source": "A", "target": "C", "weight": 2 },
+      { "id": "e5", "source": "D", "target": "E", "weight": 3 },
+      { "id": "e1", "source": "A", "target": "B", "weight": 4 }
+    ]
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="cc">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Composantes connexes</div>
+          <p class="algo-desc">Recherche des groupes de sommets connectés dans un graphe non orienté.</p>
+          <div class="subheading">Params</div>
+<pre>{}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "count": 2
+  },
+  "details": {
+    "components": [
+      ["A", "B", "C"],
+      ["D", "E"]
+    ]
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="cfc">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Composantes fortement connexes</div>
+          <p class="algo-desc">Recherche des composantes fortement connexes dans un graphe orienté.</p>
+          <div class="subheading">Params</div>
+<pre>{}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "count": 3
+  },
+  "details": {
+    "components": [
+      ["A", "B"],
+      ["C", "D", "E"],
+      ["F"]
+    ]
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="euler">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Euler</div>
+          <p class="algo-desc">Recherche d’un chemin ou circuit eulérien selon la structure du graphe.</p>
+          <div class="subheading">Params</div>
+<pre>{
+  "start_node": "A"
+}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "exists": true,
+    "type": "path"
+  },
+  "details": {
+    "path": ["A", "B", "C", "D", "A", "E"],
+    "used_edges_order": ["e1", "e2", "e3", "e4", "e5"]
+  }
+}</pre>
+          <div class="subheading">Cas d’échec possible</div>
+<pre>{
+  "summary": {
+    "exists": false,
+    "type": null
+  },
+  "details": {
+    "path": [],
+    "used_edges_order": [],
+    "reason": "Le graphe ne possède ni chemin eulérien ni circuit eulérien"
+  }
+}</pre>
+        </div>
+
+        <div class="algo-card" id="welsh-powell">
+          <div class="card-title">Algorithme</div>
+          <div class="algo-name">Welsh-Powell</div>
+          <p class="algo-desc">Coloration des sommets avec minimisation heuristique du nombre de couleurs.</p>
+          <div class="subheading">Params</div>
+<pre>{}</pre>
+          <div class="subheading">Result</div>
+<pre>{
+  "summary": {
+    "color_count": 3
+  },
+  "details": {
+    "node_colors": {
+      "A": "Rouge",
+      "B": "Bleu",
+      "C": "Vert",
+      "D": "Rouge",
+      "E": "Bleu"
+    },
+    "coloring_order": ["A", "D", "B", "E", "C"]
+  }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="example">
+      <div class="page-header">
+        <div class="page-eyebrow">Contrat 07</div>
+        <h1 class="page-title">Exemple complet final — Dijkstra</h1>
+        <p class="page-desc">Exemple complet de réponse de succès, prêt à servir de modèle à l’équipe pour implémenter les autres algorithmes avec la même structure.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">JSON complet</div>
+<pre>{
+  "success": true,
+  "algorithm": "dijkstra",
+  "message": "Exécution réussie",
+  "params": {
+    "source": "A",
+    "target": "E"
+  },
+  "result": {
+    "summary": {
+      "path": ["A", "C", "D", "E"],
+      "distance": 6,
+      "visited_order": ["A", "C", "D", "B", "E"]
+    },
+    "details": {
+      "distances": {
+        "A": 0,
+        "B": 4,
+        "C": 2,
+        "D": 3,
+        "E": 6
+      },
+      "predecessors": {
+        "A": null,
+        "B": "A",
+        "C": "A",
+        "D": "C",
+        "E": "D"
+      }
+    }
+  },
+  "visualization": {
+    "result_graph": {
+      "highlighted_nodes": ["A", "C", "D", "E"],
+      "highlighted_edges": ["e2", "e4", "e5"],
+      "node_colors": {},
+      "edge_colors": {},
+      "node_labels": {},
+      "edge_labels": {}
+    },
+    "steps": [
+      {
+        "index": 0,
+        "title": "Initialisation",
+        "description": "Distance(A)=0, les autres à infini",
+        "state": {
+          "highlighted_nodes": ["A"],
+          "highlighted_edges": [],
+          "visited_nodes": [],
+          "selected_nodes": ["A"],
+          "selected_edges": [],
+          "node_labels": {
+            "A": "0",
+            "B": "∞",
+            "C": "∞",
+            "D": "∞",
+            "E": "∞"
+          },
+          "edge_labels": {},
+          "node_colors": {},
+          "edge_colors": {},
+          "extra": {
+            "current_node": "A"
+          }
+        }
+      },
+      {
+        "index": 1,
+        "title": "Relaxation depuis A",
+        "description": "Mise à jour de B et C",
+        "state": {
+          "highlighted_nodes": ["A", "B", "C"],
+          "highlighted_edges": ["e1", "e2"],
+          "visited_nodes": ["A"],
+          "selected_nodes": ["A", "C"],
+          "selected_edges": ["e2"],
+          "node_labels": {
+            "A": "0",
+            "B": "4",
+            "C": "2",
+            "D": "∞",
+            "E": "∞"
+          },
+          "edge_labels": {},
+          "node_colors": {},
+          "edge_colors": {},
+          "extra": {
+            "current_node": "A"
+          }
+        }
+      }
+    ]
+  },
+  "meta": {
+    "execution_time_ms": 8,
+    "step_count": 2,
+    "warnings": []
+  },
+  "error": null
+}</pre>
+      </div>
+      <div class="note success" style="margin-top:18px;">Règle finale pour l’équipe : <strong>même enveloppe pour tous les algorithmes</strong>, avec seulement <strong>params</strong> et <strong>result</strong> qui changent selon le traitement.</div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
