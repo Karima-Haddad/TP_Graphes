@@ -235,7 +235,7 @@ def run_ford_fulkerson(graph, params):
             # Mettre à jour flow_map (uniquement pour les arcs originaux)
             if (u, v) in flow_map:
                 flow_map[(u, v)] += path_flow
-            if (v, u) in flow_map:
+            if (v, u) in flow_map and (u, v) not in flow_map:
                 flow_map[(v, u)] -= path_flow
 
         max_flow += path_flow

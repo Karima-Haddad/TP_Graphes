@@ -63,6 +63,41 @@ export default function AlgorithmPage() {
 
   const navigate = useNavigate();
 
+  function buildEmptyGraphSuccess(): ExecutionResponse {
+    return {
+      success: true,
+      algorithm: selectedAlgorithm,
+      message: "Graphe vide",
+      params: {},
+      result: {
+        summary: {
+          total_cost: 0,
+        },
+        details: {
+          mst_edges: [],
+          mst_nodes: [],
+        },
+      },
+      visualization: {
+        result_graph: {
+          highlighted_nodes: [],
+          highlighted_edges: [],
+          node_colors: {},
+          edge_colors: {},
+          node_labels: {},
+          edge_labels: {},
+        },
+        steps: [],
+      },
+      meta: {
+        execution_time_ms: 0,
+        step_count: 0,
+        warnings: ["Graphe vide"],
+      },
+      error: null,
+    };
+  }
+
   function getStoredGraph(): Graph | null {
     const saved = localStorage.getItem("graphData");
 
@@ -142,12 +177,15 @@ export default function AlgorithmPage() {
 
   const stepControlsEnabled = executionMode === "Pas à pas" && totalSteps > 0;
 
+  const isEmptyGraph = graph.nodes.length === 0;
+
   const executionFinished =
-  executionResult?.success === true &&
-  (
-    executionMode !== "Pas à pas" ||
-    currentStepIndex === totalSteps - 1
-  );
+    executionResult?.success === true &&
+    (
+      executionMode !== "Pas à pas" ||
+      totalSteps === 0 ||
+      currentStepIndex === totalSteps - 1
+    );
 
   const handleNextStep = () => {
     if (
@@ -193,10 +231,24 @@ export default function AlgorithmPage() {
 
   
   const handleExecute = async () => {
-  if (!compatibility.isCompatible) {
-    setApiError("Exécution impossible : algorithme incompatible avec le graphe.");
-    return;
-  }
+    const isEmptyGraph = graph.nodes.length === 0;
+
+    if (
+      isEmptyGraph &&
+      (selectedAlgorithm === "prim" || selectedAlgorithm === "kruskal")
+    ) {
+      setApiError(null);
+      setExecutionResult(buildEmptyGraphSuccess());
+      setCurrentStepIndex(0);
+      setIsStepMode(false);
+      setIsPlaying(false);
+      return;
+    }
+
+    if (!compatibility.isCompatible) {
+      setApiError("Exécution impossible : algorithme incompatible avec le graphe.");
+      return;
+    }
 
   try {
     setIsLoading(true);
@@ -468,11 +520,13 @@ export default function AlgorithmPage() {
                 </div>
 
             <div className="finish-title">
-              Exécution terminée
+              {isEmptyGraph ? "Graphe vide" : "Exécution terminée"}
             </div>
 
             <div className="finish-subtitle">
-              Résultat final de l’algorithme
+              {isEmptyGraph
+                ? "Aucune étape à afficher pour ce graphe"
+                : "Résultat final de l’algorithme"}
             </div>
 
             <div className="final-result-box">
@@ -502,21 +556,33 @@ export default function AlgorithmPage() {
               {(selectedAlgorithm==="prim" ||
                 selectedAlgorithm==="kruskal") && (
                 <>
-                  <div className="r-label">
-                    Nombre d’étapes
-                  </div>
+                  {graph.nodes.length === 0 ? (
+                    <>
+                      <div className="r-label">Résultat</div>
 
-                  <div className="final-big-value">
-                    {String(summary.total_cost ?? "—")}
-                  </div>
+                      <div className="r-value">
+                        Le graphe est vide
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="r-label">
+                        Coût total
+                      </div>
 
-                  <div className="r-label final-label">
-                    Arêtes retenues
-                  </div>
+                      <div className="final-big-value">
+                        {String(summary.total_cost ?? "—")}
+                      </div>
 
-                  <div className="r-value">
-                    {details.mst_edges?.join(", ") || "—"}
-                  </div>
+                      <div className="r-label final-label">
+                        Arêtes retenues
+                      </div>
+
+                      <div className="r-value">
+                        {details.mst_edges?.join(", ") || "—"}
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 

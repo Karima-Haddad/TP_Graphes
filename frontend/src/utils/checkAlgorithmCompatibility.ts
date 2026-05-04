@@ -85,6 +85,44 @@ export function checkAlgorithmCompatibility(
     }
   }
 
+  // const algorithmsThatNeedEdges = [
+  //   "dijkstra",
+  //   "bellman-ford",
+  //   "bellman",
+  //   "prim",
+  //   "kruskal",
+  //   "euler",
+  //   "ford-fulkerson",
+  // ];
+
+  // if (algorithmsThatNeedEdges.includes(algorithm.key) && graph.edges.length === 0) {
+  //   return {
+  //     isCompatible: false,
+  //     message: "Cet algorithme nécessite au moins une arête.",
+  //   };
+  // }
+
+
+  const algorithmsNotApplicableOnEmptyGraph = [
+    "dijkstra",
+    "bellman-ford",
+    "bellman",
+    "ford-fulkerson",
+  ];
+
+  if (
+    graph.nodes.length === 0 &&
+    algorithmsNotApplicableOnEmptyGraph.includes(algorithm.key)
+  ) {
+    return {
+      isCompatible: false,
+      message: "Cet algorithme n’est pas applicable sur un graphe vide.",
+    };
+  }
+
+
+
+
   return {
     isCompatible: true,
     message: "Compatible avec le graphe courant.",

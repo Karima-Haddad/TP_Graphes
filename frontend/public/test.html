@@ -1602,6 +1602,58 @@ E,T,10</div>
         </div>
 
         <div class="test-card">
+  <div class="test-card-header" onclick="toggle(this)">
+    <span class="test-type-badge badge-tricky">Délicat</span>
+    <span class="test-card-title">Chemin indirect via E et arêtes inverses A ↔ B</span>
+    <div class="chevron">▼</div>
+  </div>
+  <div class="test-card-body">
+    <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,10
+S,E,10
+E,B,10
+A,T,5
+A,B,5
+B,A,5
+B,T,5</div>
+    <div class="expected">
+      <div class="expected-title">✓ Résultat attendu</div>
+      <p>Flot max = <strong>10</strong>. Exemple : S→A→T avec flot 5 et S→E→B→T avec flot 5.</p>
+    </div>
+    <div class="pitfall">
+      <div class="pitfall-title">⚠ Ce qu'il faut vérifier</div>
+      <p>Les arcs A→B et B→A ne doivent pas perturber le calcul du graphe résiduel. Le flot est limité par A→T et B→T.</p>
+    </div>
+  </div>
+</div>
+
+<div class="test-card">
+  <div class="test-card-header" onclick="toggle(this)">
+    <span class="test-type-badge badge-tricky">Délicat</span>
+    <span class="test-card-title">Deux branches vers T avec chemin secondaire A→D</span>
+    <div class="chevron">▼</div>
+  </div>
+  <div class="test-card-body">
+    <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,10
+S,B,10
+B,D,10
+A,D,1
+D,T,10
+A,C,10
+C,T,10</div>
+    <div class="expected">
+      <div class="expected-title">✓ Résultat attendu</div>
+      <p>Flot max = <strong>20</strong>. Exemple : S→A→C→T avec flot 10 et S→B→D→T avec flot 10.</p>
+    </div>
+    <div class="pitfall">
+      <div class="pitfall-title">⚠ Ce qu'il faut vérifier</div>
+      <p>L'arc A→D de capacité 1 ne doit pas empêcher l'algorithme de trouver le flot optimal via A→C et B→D.</p>
+    </div>
+  </div>
+</div>
+
+        <div class="test-card">
           <div class="test-card-header" onclick="toggle(this)">
             <span class="test-type-badge badge-tricky">Délicat</span>
             <span class="test-card-title">Source = Puits (S = T)</span>
