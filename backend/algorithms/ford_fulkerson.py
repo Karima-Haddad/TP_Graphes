@@ -233,10 +233,13 @@ def run_ford_fulkerson(graph, params):
             residual[u][v] -= path_flow
             residual[v][u] += path_flow
             # Mettre à jour flow_map (uniquement pour les arcs originaux)
-            if (u, v) in flow_map:
+            if (u, v) in edge_map:
+                # Arc forward (arc original) → on augmente
                 flow_map[(u, v)] += path_flow
-            if (v, u) in flow_map and (u, v) not in flow_map:
+            elif (v, u) in edge_map:
+                # Arc backward (résiduel d'un vrai arc v→u) → on diminue
                 flow_map[(v, u)] -= path_flow
+
 
         max_flow += path_flow
 
