@@ -458,22 +458,22 @@
   <header>
     <div class="badge">Mini-Projet Graphes · Rôle : Testeur</div>
     <h1>Guide Complet<br><span>Algorithmes de Graphes</span></h1>
-    <p>// Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson</p>
+    <p>// Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson · Dijkstra · Bellman-Ford · Bellman · SCC · CC</p>
   </header>
 
   <!-- STATS -->
   <div class="stat-row">
     <div class="stat-box">
-      <div class="stat-num" style="color:var(--accent1)">5</div>
+      <div class="stat-num" style="color:var(--accent1)">10</div>
       <div class="stat-label">Algorithmes</div>
     </div>
     <div class="stat-box">
-      <div class="stat-num" style="color:var(--accent3)">32</div>
+      <div class="stat-num" style="color:var(--accent3)">59</div>
       <div class="stat-label">Cas de test</div>
     </div>
     <div class="stat-box">
-      <div class="stat-num" style="color:var(--accent2)">5</div>
-      <div class="stat-label">Catégories</div>
+      <div class="stat-num" style="color:var(--accent2)">10</div>
+      <div class="stat-label">Sections</div>
     </div>
     <div class="stat-box">
       <div class="stat-num" style="color:var(--accent4)">∞</div>
@@ -489,6 +489,11 @@
     <a href="#euler"><span class="dot" style="background:var(--accent3)"></span>03 — Euler</a>
     <a href="#welsh"><span class="dot" style="background:var(--accent4)"></span>04 — Welsh-Powell</a>
     <a href="#ford"><span class="dot" style="background:var(--accent5)"></span>05 — Ford-Fulkerson</a>
+    <a href="#dijkstra"><span class="dot" style="background:var(--accent1)"></span>06 — Dijkstra</a>
+    <a href="#bellman-ford"><span class="dot" style="background:var(--accent2)"></span>07 — Bellman-Ford</a>
+    <a href="#bellman"><span class="dot" style="background:var(--accent4)"></span>08 — Bellman</a>
+    <a href="#scc"><span class="dot" style="background:var(--accent3)"></span>09 — SCC</a>
+    <a href="#cc"><span class="dot" style="background:var(--accent5)"></span>10 — CC</a>
   </div>
 
   <!-- ============================
@@ -1642,10 +1647,644 @@ B,T,1000
     </div>
   </div>
 
+  <!-- ============================
+       ALGO 6 : DIJKSTRA
+  ============================= -->
+  <div class="algo-section" id="dijkstra">
+    <div class="algo-section-header" style="border-left-color:var(--accent1)">
+      <div class="algo-header">
+        <div class="algo-num">06</div>
+        <div class="algo-title" style="color:var(--accent1)">Algorithme de Dijkstra</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> calculer les plus courts chemins depuis une source dans un graphe pondéré sans poids négatifs.</p>
+      <p><strong>Contraintes :</strong> les poids négatifs sont interdits. Dijkstra suppose que chaque relaxation ne fait qu'améliorer progressivement les distances.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent1);border-color:rgba(26,109,181,0.4)">O((V+E) log V)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Orienté ou non orienté</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Poids non négatifs uniquement</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Chemin unique</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,1
+A,B,2
+B,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0, d(A)=1, d(B)=3, d(D)=4. Chemin optimal : S→A→B→D.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Plusieurs chemins, choix optimal</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,1
+B,D,2
+A,C,3
+C,D,4</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=1, d(C)=3, d(D)=3. Chemin optimal : A→B→D.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Poids unitaires</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,1
+A,C,1
+B,D,1
+C,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=1, d(C)=1, d(D)=2. Les égalités doivent donner le même coût final.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Source = destination</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,5
+S,B,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0 et chemin = [S]. L'algorithme ne doit pas explorer inutilement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Cas Limites</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-limit">Limite</span>
+            <span class="test-card-title">Noeud isolé</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,2
+C (isolé)</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=2, d(C)=∞. Les sommets sans prédécesseur doivent rester inaccessibles.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Destination inaccessible</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,1
+A,B,2
+C,D,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0, d(A)=1, d(B)=3, d(D)=∞. Aucun chemin ne rejoint D depuis S.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-limit">Limite</span>
+            <span class="test-card-title">Arêtes égales en poids</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,1
+A,C,1
+B,D,1
+C,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Deux chemins optimaux vers D ont le même coût. L'égalité ne doit pas casser la relaxation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Cas Interdits / Extrêmes</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Poids négatif interdit</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,4
+S,B,2
+B,A,-1
+A,D,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Dijkstra ne doit pas accepter ce graphe. Le vrai coût vers A passe par S→B→A = 1.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Très grands poids / overflow</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,2147483647
+B,C,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=2147483647, d(C)=2147483648. Il faut une arithmétique 64 bits.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 7 : BELLMAN-FORD
+  ============================= -->
+  <div class="algo-section" id="bellman-ford">
+    <div class="algo-section-header" style="border-left-color:var(--accent2)">
+      <div class="algo-header">
+        <div class="algo-num">07</div>
+        <div class="algo-title" style="color:var(--accent2)">Algorithme de Bellman-Ford</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Explication & Fonctionnement</h3>
+      <p><strong>Objectif :</strong> calculer les plus courts chemins même en présence de poids négatifs.</p>
+      <p><strong>Point fort :</strong> Bellman-Ford détecte aussi les cycles négatifs atteignables depuis la source.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent2);border-color:rgba(201,82,10,0.4)">O(VE)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Orienté</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Poids négatifs autorisés</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Poids négatif valide</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,4
+S,B,2
+B,A,-1
+A,D,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0, d(B)=2, d(A)=1, d(D)=4. Chemin optimal : S→B→A→D.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Arêtes parallèles</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,5
+A,B,-2
+B,C,3</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=-2, d(C)=1. La meilleure arête doit être retenue.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Cycle positif</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,1
+B,C,2
+C,A,4
+A,D,10</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(B)=1, d(C)=3, d(D)=10. Seuls les cycles négatifs posent problème.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Cycle négatif atteignable</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,1
+A,B,2
+B,C,-6
+C,A,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Détection d'un cycle négatif atteignable. Le plus court chemin devient indéfini.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Cycle négatif non atteignable</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,2
+X,Y,-3
+Y,X,-1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0, d(A)=2. Le cycle négatif isolé ne doit pas affecter les sommets accessibles.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Graphe non orienté avec poids négatif</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A—B,-1
+B—C,2</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Cas interdit : en non orienté, une arête négative crée un cycle négatif implicite.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Cas Limites / Extrêmes</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-nosol">Sans Solution</span>
+            <span class="test-card-title">Destination inaccessible</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,3
+B,C,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(S)=0, d(A)=3, d(B)=∞, d(C)=∞. Les sommets non atteignables restent infinis.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-extreme">Extrême</span>
+            <span class="test-card-title">Overflow potentiel</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,2147483647
+B,C,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Le calcul doit être sur 64 bits : d(A)=0, d(B)=2147483647, d(C)=2147483648.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 8 : BELLMAN
+  ============================= -->
+  <div class="algo-section" id="bellman">
+    <div class="algo-section-header" style="border-left-color:var(--accent4)">
+      <div class="algo-header">
+        <div class="algo-num">08</div>
+        <div class="algo-title" style="color:var(--accent4)">Bellman</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Principe</h3>
+      <p>Si le graphe ne contient pas de circuit, on choisit à chaque étape un sommet dont tous les prédécesseurs sont déjà traités.</p>
+      <p>Les équations de Bellman permettent alors de calculer les distances et de reconstituer le prédécesseur qui réalise le minimum.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent4);border-color:rgba(123,63,160,0.4)">O(V + E)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Seulement si le graphe est sans circuit</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Ordre topologique requis</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Normaux</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Exemple avec ordre topologique</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,3
+A,C,1
+C,B,2
+B,D,4
+C,D,7
+<span class="comment">// Ordre : A → C → B → D</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=0, d(C)=1, d(B)=3, d(D)=7. Le parcours doit suivre l'ordre topologique, pas l'ordre alphabétique.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Source avec plusieurs successeurs</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+S,A,4
+S,B,1
+S,C,7
+A,D,2
+B,D,5
+C,D,1</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>d(A)=4, d(B)=1, d(C)=7, d(D)=6. Deux chemins optimaux existent vers D.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Cas Délicats</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-tricky">Délicat</span>
+            <span class="test-card-title">Graphe avec circuit interdit</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B,2
+B,C,3
+C,A,1
+<span class="comment">// Cycle : A → B → C → A</span></div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Erreur / interdit. La version simplifiée de Bellman ne s'applique pas aux graphes avec circuit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 9 : SCC
+  ============================= -->
+  <div class="algo-section" id="scc">
+    <div class="algo-section-header" style="border-left-color:var(--accent3)">
+      <div class="algo-header">
+        <div class="algo-num">09</div>
+        <div class="algo-title" style="color:var(--accent3)">SCC — Composantes fortement connexes</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Principe</h3>
+      <p>Une composante fortement connexe est un ensemble maximal de sommets d'un graphe orienté tel que chaque sommet peut atteindre tous les autres.</p>
+      <p>Pour un graphe non orienté, il faut utiliser les composantes connexes (CC) et non les SCC.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent3);border-color:rgba(58,140,63,0.4)">O(V + E)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Graphe orienté uniquement</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Forte réciprocité des chemins</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Deux cycles indépendants</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B
+B,C
+C,A
+D,E
+E,D</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>2 SCC : {A, B, C} et {D, E}. Aucune arête ne relie les deux groupes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe fortement connexe</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B
+B,C
+C,D
+D,A</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>Une seule SCC = {A, B, C, D}. Tous les sommets sont mutuellement accessibles.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">DAG sans cycle</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arcs :</span>
+A,B
+A,C
+B,D
+C,D</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>{A}, {B}, {C}, {D}. Quatre SCC de taille 1 car aucun retour n'est possible.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================
+       ALGO 10 : CC
+  ============================= -->
+  <div class="algo-section" id="cc">
+    <div class="algo-section-header" style="border-left-color:var(--accent5)">
+      <div class="algo-header">
+        <div class="algo-num">10</div>
+        <div class="algo-title" style="color:var(--accent5)">CC — Composantes connexes</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>// Principe</h3>
+      <p>Une composante connexe est un ensemble maximal de sommets reliés par des chemins dans un graphe non orienté.</p>
+      <p>Sur graphe orienté, il faut utiliser SCC. En non orienté, un seul lien suffit pour connecter deux sommets.</p>
+      <div class="complexity-bar">
+        <span class="complexity-tag" style="color:var(--accent5);border-color:rgba(176,136,0,0.4)">O(V + E)</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Graphe non orienté uniquement</span>
+        <span class="complexity-tag" style="color:var(--muted);border-color:var(--border)">Visite BFS/DFS</span>
+      </div>
+    </div>
+
+    <div class="section-content">
+      <div class="section-label">Cas Tests</div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe séparé</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A-B
+B-C
+D-E</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>2 composantes : {A, B, C} et {D, E}. Aucun lien fantôme entre les deux groupes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Graphe complet K4</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+Toutes les paires entre A, B, C, D</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>1 seule composante = {A, B, C, D}. Tous les sommets doivent être visités.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-header" onclick="toggle(this)">
+            <span class="test-type-badge badge-normal">Normal</span>
+            <span class="test-card-title">Sommet isolé</span>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="test-card-body">
+            <div class="graph-def"><span class="keyword">Arêtes :</span>
+A-B-C
+D (isolé)
+E-F</div>
+            <div class="expected">
+              <div class="expected-title">✓ Résultat attendu</div>
+              <p>3 composantes : {A, B, C}, {D}, {E, F}. Les sommets isolés doivent être comptés.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <p>// Guide de Test — Mini-Projet Graphes · Rôle Testeur</p>
-    <p>Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson</p>
+    <p>Prim · Kruskal · Euler · Welsh-Powell · Ford-Fulkerson · Dijkstra · Bellman-Ford · Bellman · SCC · CC</p>
   </footer>
 
 </div>

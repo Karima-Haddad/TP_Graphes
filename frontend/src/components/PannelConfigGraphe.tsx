@@ -3,9 +3,11 @@ import type { Graph } from '../types/graph.types';
 
 interface PropsPannelConfigGraphe {
   graph: Graph | null;
+  mode?: 'analysis' | 'edit';
 }
 
-export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph }) => {
+export const PannelConfigGraphe: React.FC<PropsPannelConfigGraphe> = ({ graph, mode = 'analysis' }) => {
+
   const [statistiques, setStatistiques] = useState({
     sommets: 0,
     aretes: 0,

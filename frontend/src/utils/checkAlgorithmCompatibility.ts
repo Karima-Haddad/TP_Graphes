@@ -69,11 +69,20 @@ export function checkAlgorithmCompatibility(
     }
   }
 
-  if (algorithm.key === "bellman" && graphProperties?.result?.has_cycle) {
-    return {
-      isCompatible: false,
-      message: "Bellman simplifié nécessite un graphe sans circuit.",
-    };
+  if (algorithm.key === "bellman") {
+    if (graph.directed) {
+      return {
+        isCompatible: false,
+        message: "Bellman simplifié nécessite un graphe non orienté.",
+      };
+    }
+
+    if (graphProperties?.result?.has_cycle === true) {
+      return {
+        isCompatible: false,
+        message: "Bellman simplifié nécessite un graphe sans circuit.",
+      };
+    }
   }
 
   return {

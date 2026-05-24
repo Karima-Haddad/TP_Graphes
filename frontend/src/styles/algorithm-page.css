@@ -2031,3 +2031,24 @@ grid-template-columns:1fr;
   height: 38px;
   padding: 0;
 }
+
+.components-simple {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.component-line {
+  font-size: 13px; /* 🔻 taille réduite */
+  color: #374151;
+}
+
+.component-title {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.component-nodes {
+  font-weight: 400;
+}
